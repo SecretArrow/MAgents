@@ -20,10 +20,11 @@ class MemoryService {
   static String normalize(String text) =>
       text.toLowerCase().trim().replaceAll(RegExp(r'\s+'), ' ');
 
-  static Set<String> tokenize(String text) => normalize(text)
-      .split(RegExp(r'[^a-z0-9]+'))
-      .where((String t) => t.length > 1)
-      .toSet();
+  static Set<String> tokenize(String text) =>
+      normalize(text)
+          .split(RegExp(r'[^a-z0-9]+'))
+          .where((String t) => t.length > 1)
+          .toSet();
 
   /// Adds a memory. Returns the stored entry, the EXISTING entry when a
   /// near-duplicate (same normalized text) already exists, or null when

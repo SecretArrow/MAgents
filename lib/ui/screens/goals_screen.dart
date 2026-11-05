@@ -127,8 +127,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                           max: 100,
                           divisions: 20,
                           label: '${progress.round()}%',
-                          onChanged: (double v) =>
-                              setLocal(() => progress = v),
+                          onChanged: (double v) => setLocal(() => progress = v),
                         ),
                       ),
                       Text('${progress.round()}%'),

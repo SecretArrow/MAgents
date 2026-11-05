@@ -68,10 +68,10 @@ class GoalService {
     ];
     if (updated == null) return null;
     // Completing a goal pins its progress at 100.
-    if (updated!.status == GoalStatus.done && updated!.progress != 100) {
-      updated = updated!.copyWith(progress: 100);
+    if (updated.status == GoalStatus.done && updated.progress != 100) {
+      updated = updated.copyWith(progress: 100);
       final int idx = next.indexWhere((GoalEntry g) => g.id == id);
-      if (idx >= 0) next[idx] = updated!;
+      if (idx >= 0) next[idx] = updated;
     }
     await _repo.save(next);
     return updated;

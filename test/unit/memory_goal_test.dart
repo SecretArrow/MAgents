@@ -76,10 +76,7 @@ void main() {
       );
       final List<MemoryEntry> hits = svc.search('blue');
       expect(hits.first.pinned, isTrue);
-      expect(
-        hits.map((MemoryEntry e) => e.text),
-        contains('blue ocean photo'),
-      );
+      expect(hits.map((MemoryEntry e) => e.text), contains('blue ocean photo'));
       expect(
         hits.map((MemoryEntry e) => e.text),
         isNot(contains('banana bread recipe')),
@@ -141,13 +138,18 @@ void main() {
             createdAt: now,
             updatedAt: now,
           );
-      expect(make(now.subtract(const Duration(hours: 1))).isOverdue(now), isTrue);
+      expect(
+        make(now.subtract(const Duration(hours: 1))).isOverdue(now),
+        isTrue,
+      );
       expect(make(now.add(const Duration(hours: 24))).isDueSoon(now), isTrue);
       expect(make(now.add(const Duration(hours: 24))).isOverdue(now), isFalse);
       expect(make(now.add(const Duration(days: 7))).isDueSoon(now), isFalse);
       expect(
-        make(now.subtract(const Duration(days: 1)), status: GoalStatus.done)
-            .isOverdue(now),
+        make(
+          now.subtract(const Duration(days: 1)),
+          status: GoalStatus.done,
+        ).isOverdue(now),
         isFalse,
       );
       expect(make(null).isOverdue(now), isFalse);
@@ -187,7 +189,11 @@ void main() {
         'goal_update',
         'goal_complete',
       ]) {
-        expect(names.where((String n) => n == name), hasLength(1), reason: name);
+        expect(
+          names.where((String n) => n == name),
+          hasLength(1),
+          reason: name,
+        );
       }
     });
 
@@ -206,28 +212,36 @@ void main() {
         goals: goalSvc,
       );
 
-      final ToolResult saved = await executor.execute('memory_save', <String, dynamic>{
-        'text': 'User prefers concise answers',
-        'category': 'preference',
-      });
+      final ToolResult saved = await executor.execute(
+        'memory_save',
+        <String, dynamic>{
+          'text': 'User prefers concise answers',
+          'category': 'preference',
+        },
+      );
       expect(saved.ok, isTrue);
-      final ToolResult recalled = await executor.execute('memory_recall', <String, dynamic>{
-        'query': 'concise answers',
-      });
+      final ToolResult recalled = await executor.execute(
+        'memory_recall',
+        <String, dynamic>{'query': 'concise answers'},
+      );
       expect(recalled.ok, isTrue);
       expect(recalled.llmOutput, contains('concise answers'));
 
-      final ToolResult created = await executor.execute('goal_create', <String, dynamic>{
-        'title': 'Finish MAgents',
-        'progress': 20,
-      });
+      final ToolResult created = await executor.execute(
+        'goal_create',
+        <String, dynamic>{'title': 'Finish MAgents', 'progress': 20},
+      );
       expect(created.ok, isTrue);
-      final ToolResult listed = await executor.execute('goal_list', <String, dynamic>{});
+      final ToolResult listed = await executor.execute(
+        'goal_list',
+        <String, dynamic>{},
+      );
       expect(listed.llmOutput, contains('Finish MAgents'));
       final String goalId = goalSvc.list().single.id;
-      final ToolResult completed = await executor.execute('goal_complete', <String, dynamic>{
-        'id': goalId,
-      });
+      final ToolResult completed = await executor.execute(
+        'goal_complete',
+        <String, dynamic>{'id': goalId},
+      );
       expect(completed.ok, isTrue);
       expect(goalSvc.list().single.status, GoalStatus.done);
     });
@@ -242,7 +256,10 @@ void main() {
         resolveBaseDir: (_) async => dir,
         isAutomationEnabled: () => true,
       );
-      final ToolResult result = await executor.execute('memory_list', <String, dynamic>{});
+      final ToolResult result = await executor.execute(
+        'memory_list',
+        <String, dynamic>{},
+      );
       expect(result.ok, isFalse);
       expect(result.llmOutput, contains('unavailable'));
     });

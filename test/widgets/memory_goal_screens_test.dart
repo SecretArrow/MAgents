@@ -50,7 +50,10 @@ void main() {
     );
     addTearDown(container.dispose);
     await tester.pumpWidget(
-      UncontrolledProviderScope(container: container, child: const MAgentsApp()),
+      UncontrolledProviderScope(
+        container: container,
+        child: const MAgentsApp(),
+      ),
     );
     await tester.pump();
     return container;

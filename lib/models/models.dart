@@ -1554,9 +1554,7 @@ class GoalEntry {
 
   /// Active goal whose deadline has passed at [now].
   bool isOverdue(DateTime now) =>
-      status == GoalStatus.active &&
-      dueDate != null &&
-      dueDate!.isBefore(now);
+      status == GoalStatus.active && dueDate != null && dueDate!.isBefore(now);
 
   /// Active goal due within the next 48 hours (but not yet overdue).
   bool isDueSoon(DateTime now) {

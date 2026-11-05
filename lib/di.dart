@@ -78,7 +78,9 @@ final memoryRepositoryProvider = Provider<MemoryRepository>((ref) {
 
 /// Must be overridden in main() with a real repository (v1.50.0).
 final goalRepositoryProvider = Provider<GoalRepository>((ref) {
-  throw UnimplementedError('goalRepositoryProvider must be overridden in main()');
+  throw UnimplementedError(
+    'goalRepositoryProvider must be overridden in main()',
+  );
 });
 
 final memoryServiceProvider = Provider<MemoryService>(

@@ -377,7 +377,8 @@ class ToolExecutor {
     }
     return ToolResult(
       ok: true,
-      llmOutput: 'Saved memory ${entry.id} [${entry.category.name}]: '
+      llmOutput:
+          'Saved memory ${entry.id} [${entry.category.name}]: '
           '${entry.text}',
       displayText: 'memory saved',
     );
@@ -419,9 +420,7 @@ class ToolExecutor {
     final Object? cat = args['category'];
     if (cat != null && cat.toString().isNotEmpty) {
       final MemoryCategory wanted = _memoryCategory(cat);
-      entries = entries
-          .where((MemoryEntry e) => e.category == wanted)
-          .toList();
+      entries = entries.where((MemoryEntry e) => e.category == wanted).toList();
     }
     if (entries.isEmpty) {
       return const ToolResult(ok: true, llmOutput: 'No memories stored.');
@@ -477,7 +476,8 @@ class ToolExecutor {
     }
     return ToolResult(
       ok: true,
-      llmOutput: 'Created goal ${goal.id}: ${goal.title} '
+      llmOutput:
+          'Created goal ${goal.id}: ${goal.title} '
           '(${goal.progress}%)',
       displayText: 'goal created',
     );
@@ -554,7 +554,8 @@ class ToolExecutor {
     }
     return ToolResult(
       ok: true,
-      llmOutput: 'Updated goal ${goal.id}: ${goal.title} '
+      llmOutput:
+          'Updated goal ${goal.id}: ${goal.title} '
           '[${goal.status.name}] (${goal.progress}%)',
       displayText: 'goal updated',
     );

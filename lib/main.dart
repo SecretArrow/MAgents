@@ -33,8 +33,7 @@ Future<void> main() async {
       await PrefsSettingsRepository.create();
   final PrefsContextRepository contextRepo =
       await PrefsContextRepository.create();
-  final PrefsMemoryRepository memoryRepo =
-      await PrefsMemoryRepository.create();
+  final PrefsMemoryRepository memoryRepo = await PrefsMemoryRepository.create();
   final PrefsGoalRepository goalRepo = await PrefsGoalRepository.create();
   final FilePromptRepository promptRepo = FilePromptRepository(
     resolveBaseDir: getApplicationDocumentsDirectory,

@@ -655,11 +655,18 @@ List<Map<String, dynamic>> buildAgentTools({
     <String, dynamic>{
       'text': <String, dynamic>{
         'type': 'string',
-        'description': 'The memory text, e.g. "User prefers answers in Bahasa Indonesia"',
+        'description':
+            'The memory text, e.g. "User prefers answers in Bahasa Indonesia"',
       },
       'category': <String, dynamic>{
         'type': 'string',
-        'enum': <String>['fact', 'preference', 'person', 'project', 'instruction'],
+        'enum': <String>[
+          'fact',
+          'preference',
+          'person',
+          'project',
+          'instruction',
+        ],
         'description': 'Memory category (default fact)',
       },
       'pinned': <String, dynamic>{
@@ -686,7 +693,13 @@ List<Map<String, dynamic>> buildAgentTools({
     <String, dynamic>{
       'category': <String, dynamic>{
         'type': 'string',
-        'enum': <String>['fact', 'preference', 'person', 'project', 'instruction'],
+        'enum': <String>[
+          'fact',
+          'preference',
+          'person',
+          'project',
+          'instruction',
+        ],
         'description': 'Optional category filter',
       },
     },
@@ -707,10 +720,7 @@ List<Map<String, dynamic>> buildAgentTools({
     'goal_create',
     'Create a user goal (title, optional detail, progress 0-100, optional due date YYYY-MM-DD). Goals persist across chats and active goals appear in the system prompt.',
     <String, dynamic>{
-      'title': <String, dynamic>{
-        'type': 'string',
-        'description': 'Goal title',
-      },
+      'title': <String, dynamic>{'type': 'string', 'description': 'Goal title'},
       'detail': <String, dynamic>{
         'type': 'string',
         'description': 'Optional detail',
@@ -757,7 +767,10 @@ List<Map<String, dynamic>> buildAgentTools({
         'description': 'New status',
       },
       'title': <String, dynamic>{'type': 'string', 'description': 'New title'},
-      'detail': <String, dynamic>{'type': 'string', 'description': 'New detail'},
+      'detail': <String, dynamic>{
+        'type': 'string',
+        'description': 'New detail',
+      },
       'due_date': <String, dynamic>{
         'type': 'string',
         'description': 'New due date, YYYY-MM-DD',
