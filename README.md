@@ -921,6 +921,27 @@ OpenAI-compatible: **OpenRouter, InferHub, Z.AI, OpenAI, DeepSeek, Groq, dan lai
   membuat aplikasi mati.
 - **Riwayat lokal** — percakapan disimpan sebagai JSON di penyimpanan privat app.
 
+## 🧠 Memori jangka panjang & 🎯 Goals (v1.50.0 — setara Muse)
+
+MAgents (sebelumnya ZAgents — repo ini adalah kelanjutannya sejak v1.50.0)
+kini memiliki dua fitur inti ala Muse:
+
+- **Memori jangka panjang** — agent menyimpan fakta, preferensi, catatan
+  orang/proyek, dan instruksi tetap yang berlaku **lintas chat**:
+  - tools agent: `memory_save`, `memory_recall`, `memory_list`,
+    `memory_forget` (dedupe teks nyaris sama, batas 500 entri);
+  - memori yang di-pin + paling relevan dengan pesan terakhir otomatis
+    dimasukkan ke system prompt (maks ±8 entri / ±1500 karakter); bila
+    memori kosong, prompt tidak berubah sama sekali;
+  - layar **Memory** (drawer / Settings → Memory & Goals): cari, tambah,
+    edit, pin, hapus. Penyimpanan: SharedPreferences `magents.memory.v1`.
+- **Goals (tujuan pengguna)** — tujuan dengan progres 0–100, status
+  (active/done/dropped) dan tanggal jatuh tempo opsional:
+  - tools agent: `goal_create`, `goal_list`, `goal_update`, `goal_complete`;
+  - goals aktif (maks ±5, overdue didahulukan) otomatis masuk system prompt;
+  - layar **Goals**: CRUD + slider progres + status + indikator
+    **overdue** / **due soon** (≤48 jam). Penyimpanan: `magents.goals.v1`.
+
 ## 📲 Cara pakai
 
 1. Unduh APK terbaru dari halaman [**Releases**](https://github.com/SecretArrow/MAgents/releases).
@@ -1020,17 +1041,26 @@ Semua build dilakukan di CI — tidak perlu build lokal.
 
 | Workflow | Trigger | Isi |
 |---|---|---|
-| **CI** (`ci.yml`) | push `main`, PR | `dart format` check, `flutter analyze`, unit + widget tests (2 shard paralel + artefak coverage), build APK debug di PR, **E2E di emulator Android** (push main), dan job **auto-fix** (`dart fix --apply` + `dart format`, commit otomatis `[skip ci]`) bila analyze gagal |
+| **CI** (`ci.yml`) | push `main`, PR | job `changes` (dorny/paths-filter) → `dart format` check, `flutter analyze`, unit + widget tests (3 shard paralel + artefak coverage), build APK debug di PR (hanya bila kode berubah), **E2E di emulator Android** (push main, hanya bila kode berubah, dengan cache AVD/snapshot emulator), dan job **auto-fix** (`dart fix --apply` + `dart format`, commit otomatis `[skip ci]`) bila analyze gagal |
 | **Release** (`release.yml`) | tag `v*` / manual | validasi tag = versi pubspec → restore keystore terenkripsi → `flutter build apk --release` bertanda tangan → verifikasi `apksigner` → **GitHub Release otomatis** dengan APK + release notes |
 
-Optimasi kecepatan: cache pub + Flutter SDK (`flutter-action cache`), cache
-Gradle, `concurrency` cancel-in-progress, unit test di-shard, e2e emulator
-hanya di `main`, APK hanya di-build saat rilis/PR.
+Optimasi kecepatan: **path-filter** (push docs/README-only tidak menjalankan
+emulator/build APK — job ringan analyze+unit tetap selalu jalan), cache pub +
+Flutter SDK (`flutter-action cache`), cache Gradle, **cache AVD + snapshot
+emulator** (e2e jauh lebih cepat setelah run pertama), `concurrency`
+cancel-in-progress, unit test 3 shard, e2e emulator hanya di `main`, APK
+hanya di-build saat rilis/PR, actions versi terbaru (checkout/cache/
+upload-artifact v5).
+
+**Auto-release**: push ke `main` dengan versi pubspec yang belum punya tag
+→ workflow Auto Release membuat tag `vX.Y.Z` (via secret `AUTO_RELEASE_TOKEN`)
+→ `release.yml` membangun & menerbitkan APK/AAB bertanda tangan.
 
 ### Secrets untuk rilis bertanda tangan
 
 | Secret | Wajib | Isi |
 |---|---|---|
+| `AUTO_RELEASE_TOKEN` | ya (untuk auto-release) | PAT yang dipakai workflow Auto Release membuat tag rilis (tag dari `GITHUB_TOKEN` bawaan tidak memicu workflow lain) |
 | `KEYSTORE_PASSWORD` | ya | password untuk membuka `key-sign-apk.zip` (sekaligus fallback password keystore/key) |
 | `KEYSTORE_STORE_PASSWORD` | tidak | password keystore (default: `KEYSTORE_PASSWORD`) |
 | `KEYSTORE_KEY_PASSWORD` | tidak | password key (default: store password) |
@@ -1063,6 +1093,24 @@ flutter run            # perangkat/emulator terpasang
 flutter test           # unit + widget
 flutter test integration_test   # e2e (butuh emulator)
 ```
+
+## 🔁 Kompatibilitas nama (rebrand ZAgents → MAgents)
+
+Yang berubah di v1.50.0: nama paket Dart `magents`, `applicationId`
+`com.secretarrow.magents`, nama aplikasi, folder ekspor perangkat
+`Download/MAgents/…`, nama artefak rilis `MAgents-<versi>…`, dan repo update
+checker (`SecretArrow/MAgents`).
+
+Yang **sengaja dipertahankan** demi kompatibilitas mundur:
+
+- global SDK modul chat tetap `zagents` (+ aset `sdk/zagents-sdk.js` dan
+  `require('zagents-sdk')`) — modul lama tetap jalan tanpa diubah;
+- prefix key SharedPreferences lama `zagents.` tetap dipakai untuk data lama
+  (key baru memakai `magents.`, mis. `magents.memory.v1`, `magents.goals.v1`);
+- ekstensi backup tetap `.zabak`; impor backup & ekspor sesi **menerima**
+  payload lama berlabel `ZAgents` maupun baru `MAgents`;
+- nama MethodChannel native (`zagents/background`, `zagents/device`) tetap —
+  kedua sisi (Dart + Kotlin) tidak diubah agar bridge tidak putus.
 
 ## 🔒 Catatan keamanan
 
