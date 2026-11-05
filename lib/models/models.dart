@@ -1610,3 +1610,281 @@ class GoalEntry {
     );
   }
 }
+
+/// Repeat rule of a [ReminderEntry] (v1.51.0).
+enum ReminderRepeat { none, daily, weekly }
+
+ReminderRepeat reminderRepeatFromName(String? name) {
+  for (final ReminderRepeat r in ReminderRepeat.values) {
+    if (r.name == name) return r;
+  }
+  return ReminderRepeat.none;
+}
+
+/// One scheduled reminder owned by ONE chat (v1.51.0, per-chat scope —
+/// reminders never leak into other chats). Pure data + due logic.
+class ReminderEntry {
+  const ReminderEntry({
+    required this.id,
+    required this.title,
+    this.detail = '',
+    required this.dueAt,
+    this.repeat = ReminderRepeat.none,
+    this.done = false,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String title;
+  final String detail;
+  final DateTime dueAt;
+  final ReminderRepeat repeat;
+  final bool done;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  bool isOverdue(DateTime now) => !done && dueAt.isBefore(now);
+
+  bool isDueSoon(DateTime now) =>
+      !done &&
+      !dueAt.isBefore(now) &&
+      dueAt.difference(now) <= const Duration(hours: 24);
+
+  /// Next occurrence strictly after [from] for the repeat rule; for
+  /// [ReminderRepeat.none] the occurrence is [dueAt] itself (which may
+  /// be in the past — the caller decides what "missed" means).
+  DateTime nextOccurrence(DateTime from) {
+    if (repeat == ReminderRepeat.none) return dueAt;
+    final Duration step = repeat == ReminderRepeat.daily
+        ? const Duration(days: 1)
+        : const Duration(days: 7);
+    DateTime t = dueAt;
+    if (t.isAfter(from)) return t;
+    final int missed = from.difference(t).inMicroseconds ~/ step.inMicroseconds;
+    t = t.add(step * (missed + 1));
+    while (!t.isAfter(from)) {
+      t = t.add(step);
+    }
+    return t;
+  }
+
+  ReminderEntry copyWith({
+    String? title,
+    String? detail,
+    DateTime? dueAt,
+    ReminderRepeat? repeat,
+    bool? done,
+    DateTime? updatedAt,
+  }) => ReminderEntry(
+    id: id,
+    title: title ?? this.title,
+    detail: detail ?? this.detail,
+    dueAt: dueAt ?? this.dueAt,
+    repeat: repeat ?? this.repeat,
+    done: done ?? this.done,
+    createdAt: createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'title': title,
+    'detail': detail,
+    'dueAt': dueAt.toIso8601String(),
+    'repeat': repeat.name,
+    'done': done,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory ReminderEntry.fromJson(Map<String, dynamic> json) {
+    final DateTime now = DateTime.now();
+    final DateTime created =
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? now;
+    return ReminderEntry(
+      id: json['id'] as String? ?? newId(),
+      title: json['title'] as String? ?? 'Reminder',
+      detail: json['detail'] as String? ?? '',
+      dueAt: DateTime.tryParse(json['dueAt'] as String? ?? '') ?? now,
+      repeat: reminderRepeatFromName(json['repeat'] as String?),
+      done: json['done'] as bool? ?? false,
+      createdAt: created,
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? created,
+    );
+  }
+}
+
+/// Kind of a [ScheduledJob] schedule (v1.51.0, Fase F cronjobs).
+enum JobScheduleKind { once, daily, weekly, interval }
+
+JobScheduleKind jobScheduleKindFromName(String? name) {
+  for (final JobScheduleKind k in JobScheduleKind.values) {
+    if (k.name == name) return k;
+  }
+  return JobScheduleKind.once;
+}
+
+/// What a [ScheduledJob] does when it fires.
+enum JobAction { notify, telegram, both }
+
+JobAction jobActionFromName(String? name) {
+  for (final JobAction a in JobAction.values) {
+    if (a.name == name) return a;
+  }
+  return JobAction.notify;
+}
+
+/// One scheduled job owned by ONE chat (per-chat scope). The repository
+/// stores a LIST of these per chat — many independent jobs per chat are
+/// the norm, never a singleton.
+class ScheduledJob {
+  const ScheduledJob({
+    required this.id,
+    required this.sessionId,
+    required this.title,
+    this.message = '',
+    this.kind = JobScheduleKind.once,
+    this.hour = 9,
+    this.minute = 0,
+    this.weekday = 1,
+    this.intervalMinutes = 60,
+    this.runAt,
+    this.action = JobAction.notify,
+    this.enabled = true,
+    this.lastRunAt,
+    this.nextRunAt,
+    this.lastStatus = '',
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String sessionId;
+  final String title;
+  final String message;
+  final JobScheduleKind kind;
+  final int hour;
+  final int minute;
+
+  /// 1 = Monday .. 7 = Sunday (weekly kind only).
+  final int weekday;
+
+  /// Interval kind only (minutes, min 1).
+  final int intervalMinutes;
+
+  /// Absolute fire time for [JobScheduleKind.once].
+  final DateTime? runAt;
+  final JobAction action;
+  final bool enabled;
+  final DateTime? lastRunAt;
+  final DateTime? nextRunAt;
+
+  /// Short human status of the last fire, e.g. 'ok' or 'error: …'.
+  final String lastStatus;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  static int clampHour(Object? v) {
+    final int p = v is int ? v : int.tryParse('$v') ?? 9;
+    return p < 0 ? 0 : (p > 23 ? 23 : p);
+  }
+
+  static int clampMinute(Object? v) {
+    final int p = v is int ? v : int.tryParse('$v') ?? 0;
+    return p < 0 ? 0 : (p > 59 ? 59 : p);
+  }
+
+  static int clampWeekday(Object? v) {
+    final int p = v is int ? v : int.tryParse('$v') ?? 1;
+    return p < 1 ? 1 : (p > 7 ? 7 : p);
+  }
+
+  static int clampInterval(Object? v) {
+    final int p = v is int ? v : int.tryParse('$v') ?? 60;
+    return p < 1 ? 1 : p;
+  }
+
+  ScheduledJob copyWith({
+    String? title,
+    String? message,
+    JobScheduleKind? kind,
+    int? hour,
+    int? minute,
+    int? weekday,
+    int? intervalMinutes,
+    DateTime? runAt,
+    JobAction? action,
+    bool? enabled,
+    DateTime? lastRunAt,
+    DateTime? nextRunAt,
+    bool clearNextRunAt = false,
+    String? lastStatus,
+    DateTime? updatedAt,
+  }) => ScheduledJob(
+    id: id,
+    sessionId: sessionId,
+    title: title ?? this.title,
+    message: message ?? this.message,
+    kind: kind ?? this.kind,
+    hour: hour ?? this.hour,
+    minute: minute ?? this.minute,
+    weekday: weekday ?? this.weekday,
+    intervalMinutes: intervalMinutes ?? this.intervalMinutes,
+    runAt: runAt ?? this.runAt,
+    action: action ?? this.action,
+    enabled: enabled ?? this.enabled,
+    lastRunAt: lastRunAt ?? this.lastRunAt,
+    nextRunAt: clearNextRunAt ? null : (nextRunAt ?? this.nextRunAt),
+    lastStatus: lastStatus ?? this.lastStatus,
+    createdAt: createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'sessionId': sessionId,
+    'title': title,
+    'message': message,
+    'kind': kind.name,
+    'hour': hour,
+    'minute': minute,
+    'weekday': weekday,
+    'intervalMinutes': intervalMinutes,
+    if (runAt != null) 'runAt': runAt!.toIso8601String(),
+    'action': action.name,
+    'enabled': enabled,
+    if (lastRunAt != null) 'lastRunAt': lastRunAt!.toIso8601String(),
+    if (nextRunAt != null) 'nextRunAt': nextRunAt!.toIso8601String(),
+    'lastStatus': lastStatus,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory ScheduledJob.fromJson(Map<String, dynamic> json) {
+    final DateTime now = DateTime.now();
+    final DateTime created =
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? now;
+    return ScheduledJob(
+      id: json['id'] as String? ?? newId(),
+      sessionId: json['sessionId'] as String? ?? '',
+      title: json['title'] as String? ?? 'Job',
+      message: json['message'] as String? ?? '',
+      kind: jobScheduleKindFromName(json['kind'] as String?),
+      hour: clampHour(json['hour']),
+      minute: clampMinute(json['minute']),
+      weekday: clampWeekday(json['weekday']),
+      intervalMinutes: clampInterval(json['intervalMinutes']),
+      runAt: DateTime.tryParse(json['runAt'] as String? ?? ''),
+      action: jobActionFromName(json['action'] as String?),
+      enabled: json['enabled'] as bool? ?? true,
+      lastRunAt: DateTime.tryParse(json['lastRunAt'] as String? ?? ''),
+      nextRunAt: DateTime.tryParse(json['nextRunAt'] as String? ?? ''),
+      lastStatus: json['lastStatus'] as String? ?? '',
+      createdAt: created,
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? created,
+    );
+  }
+}
