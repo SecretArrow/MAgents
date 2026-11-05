@@ -921,26 +921,62 @@ OpenAI-compatible: **OpenRouter, InferHub, Z.AI, OpenAI, DeepSeek, Groq, dan lai
   membuat aplikasi mati.
 - **Riwayat lokal** — percakapan disimpan sebagai JSON di penyimpanan privat app.
 
-## 🧠 Memori jangka panjang & 🎯 Goals (v1.50.0 — setara Muse)
+## 🧠 Memori, 🎯 Goals, ⏰ Reminders, 🗓️ CronJobs & 📋 Briefing (setara Muse — v1.50.0/v1.51.0)
 
-MAgents (sebelumnya ZAgents — repo ini adalah kelanjutannya sejak v1.50.0)
-kini memiliki dua fitur inti ala Muse:
+> **Keputusan user (mengikat): data TIDAK BOLEH bercampur antar chat.**
+> Berbeda dari Muse yang mengingat lintas percakapan, semua fitur
+> personal di MAgents **di-scope per chat aktif** — selaras filosofi
+> sandbox per sesi aplikasi ini (file/browser/modul memang sudah per
+> chat). Memori global dari build awal v1.50.0 ditinggalkan dan TIDAK
+> pernah dimigrasikan ke chat mana pun. Analisis lengkap:
+> [docs/muse-parity.md](docs/muse-parity.md).
 
-- **Memori jangka panjang** — agent menyimpan fakta, preferensi, catatan
-  orang/proyek, dan instruksi tetap yang berlaku **lintas chat**:
-  - tools agent: `memory_save`, `memory_recall`, `memory_list`,
-    `memory_forget` (dedupe teks nyaris sama, batas 500 entri);
-  - memori yang di-pin + paling relevan dengan pesan terakhir otomatis
-    dimasukkan ke system prompt (maks ±8 entri / ±1500 karakter); bila
-    memori kosong, prompt tidak berubah sama sekali;
-  - layar **Memory** (drawer / Settings → Memory & Goals): cari, tambah,
-    edit, pin, hapus. Penyimpanan: SharedPreferences `magents.memory.v1`.
-- **Goals (tujuan pengguna)** — tujuan dengan progres 0–100, status
-  (active/done/dropped) dan tanggal jatuh tempo opsional:
-  - tools agent: `goal_create`, `goal_list`, `goal_update`, `goal_complete`;
-  - goals aktif (maks ±5, overdue didahulukan) otomatis masuk system prompt;
-  - layar **Goals**: CRUD + slider progres + status + indikator
-    **overdue** / **due soon** (≤48 jam). Penyimpanan: `magents.goals.v1`.
+- **Memori per chat** — fakta/preferensi/catatan orang/proyek/instruksi
+  tetap milik SATU chat (key `magents.memory.v1.<sessionId>`):
+  - tools: `memory_save`, `memory_recall`, `memory_list`, `memory_forget`
+    (dedupe teks nyaris sama, batas 500 entri/chat);
+  - memori ter-pin + paling relevan otomatis masuk system prompt chat itu
+    (maks ±8 entri / ±1500 karakter); memori kosong = prompt tak berubah;
+  - layar **Memory** (drawer / Settings) hanya menampilkan chat aktif.
+- **Goals per chat** — progres 0–100, status, due date opsional (key
+  `magents.goals.v1.<sessionId>`): tools `goal_create`, `goal_list`,
+  `goal_update`, `goal_complete`; indikator **overdue** / **due soon**
+  (≤48 jam); goals aktif masuk system prompt chat itu.
+- **Reminders per chat** (v1.51.0, key `magents.reminders.v1.<sessionId>`):
+  tools `reminder_create`, `reminder_list`, `reminder_complete`;
+  repeat none/daily/weekly (selesai → jadwal berulang maju ke kemunculan
+  berikutnya); layar **Reminders**; reminder jatuh tempo tampil di Briefing.
+- **CronJobs per chat** (v1.51.0, key `magents.jobs.v1.<sessionId>`) —
+  tugas terjadwal yang saat fire bisa **menampilkan notifikasi lokal**
+  dan/atau **auto-send teks ke Telegram**:
+  - **Banyak job per chat** (bukan satu!): daftar job independen, batas
+    pengaman 100 job/chat; jadwal sama persis pun tetap terpisah;
+  - jadwal: once / daily / weekly / interval (menit); aksi:
+    notify / telegram / both; status terakhir (ok/error) per job;
+  - tools: `cron_create` (bisa dipanggil berkali-kali), `cron_list`,
+    `cron_update`, `cron_delete` — hanya chat aktif;
+  - **Kelola dari Settings → CronJobs (tepat di bawah Appearance)** —
+    membuka layar penuh tersendiri berisi daftar job, editor job
+    satu halaman penuh, DAN konfigurasi Telegram (Bot Token tersimpan
+    terenkripsi via secure storage, Chat ID, tombol **Kirim tes**);
+  - mesin best-effort: pemeriksaan saat aplikasi start/resume
+    (catch-up job terlewat) + timer 1 menit selama aplikasi hidup;
+    notifikasi memakai plumbing "tugas selesai" yang sudah ada —
+    mengetuk notifikasi membuka chat pemilik job;
+  - ⚠️ **Keterbatasan jujur**: Android membunuh aplikasi di latar —
+    fire presisi saat aplikasi mati total butuh AlarmManager/
+    WorkManager yang belum dipasang; job bersifat best-effort dan
+    mengejar ketertinggalan saat aplikasi dibuka lagi.
+- **Briefing** (v1.51.0) — sapaan agen personal untuk chat aktif
+  (ikon dashboard di drawer / Settings): goals aktif + progres,
+  reminder jatuh tempo, job terjadwal berikutnya, memori ter-pin.
+  Agregasi murni Dart (`BriefingService`), layar baca-saja.
+- **skill_save** (v1.51.0) — agent kini bisa MENYIMPAN skill/playbook
+  baru dari chat (nama + deskripsi + instruksi); tampil di layar Skills
+  seperti skill terinstal lain (sumber tercatat `chat:<nama>`).
+- **Ekspor HTML** (v1.51.0) — selain Markdown, transkrip chat bisa
+  diekspor sebagai satu file `.html` mandiri (CSS inline): tekan-lama
+  tombol ekspor chat di drawer.
 
 ## 📲 Cara pakai
 
