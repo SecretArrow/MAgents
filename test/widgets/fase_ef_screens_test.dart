@@ -88,9 +88,7 @@ void main() {
 
   Future<void> push(WidgetTester tester, Widget screen) async {
     final NavigatorState navigator = tester.state(find.byType(Navigator));
-    unawaited(
-      navigator.push(MaterialPageRoute<void>(builder: (_) => screen)),
-    );
+    unawaited(navigator.push(MaterialPageRoute<void>(builder: (_) => screen)));
     await tester.pumpAndSettle(
       const Duration(milliseconds: 100),
       EnginePhase.sendSemanticsUpdate,
