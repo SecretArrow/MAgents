@@ -1,7 +1,7 @@
 name: magents
 description: "MAgents - AI agent chat Android (gaya Z.AI agent mode) dengan custom provider (OpenRouter, InferHub, Z.AI, OpenAI, dll), katalog model live + pencarian/filter/paging, memori jangka panjang, goals, dan otomasi browser."
 publish_to: 'none'
-version: 1.51.1+78
+version: 1.51.2+79
 
 environment:
   sdk: ^3.13.5
