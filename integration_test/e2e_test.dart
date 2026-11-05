@@ -7,16 +7,16 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/main.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/js_runtime.dart';
-import 'package:zagents/services/agent_controller.dart';
-import 'package:zagents/services/llm_client.dart';
-import 'package:zagents/services/module_registry.dart';
-import 'package:zagents/services/module_runtime.dart';
-import 'package:zagents/services/session_sandbox.dart';
-import 'package:zagents/ui/screens/settings_screen.dart';
+import 'package:magents/di.dart';
+import 'package:magents/main.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/js_runtime.dart';
+import 'package:magents/services/agent_controller.dart';
+import 'package:magents/services/llm_client.dart';
+import 'package:magents/services/module_registry.dart';
+import 'package:magents/services/module_runtime.dart';
+import 'package:magents/services/session_sandbox.dart';
+import 'package:magents/ui/screens/settings_screen.dart';
 
 import '../test/support/test_doubles.dart';
 
@@ -99,12 +99,12 @@ void main() {
           dir: tempDir,
           settings: AppSettings(apiKey: 'e2e-key'),
         ),
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pumpAndSettle(const Duration(seconds: 1));
 
-    final BuildContext chatContext = tester.element(find.byType(ZAgentsApp));
+    final BuildContext chatContext = tester.element(find.byType(MAgentsApp));
     final ProviderContainer chatContainer = ProviderScope.containerOf(
       chatContext,
     );
@@ -396,7 +396,7 @@ module.exports = main();
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pumpAndSettle(const Duration(seconds: 1));
@@ -561,7 +561,7 @@ module.exports = main();
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pumpAndSettle(const Duration(seconds: 1));

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// Keeps a running agent task alive when the user leaves the app.
 ///
-/// On Android this drives [ZAgentsForegroundService] (foreground service +
+/// On Android this drives [MAgentsForegroundService] (foreground service +
 /// partial wake lock + progress notification) through the
 /// `zagents/background` method channel. While the service runs, Android
 /// cannot freeze or kill the process, so the Dart agent loop and the

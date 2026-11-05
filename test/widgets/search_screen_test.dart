@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/chat_store.dart';
-import 'package:zagents/ui/screens/search_screen.dart';
-import 'package:zagents/ui/theme.dart';
+import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/chat_store.dart';
+import 'package:magents/ui/screens/search_screen.dart';
+import 'package:magents/ui/theme.dart';
 
 import '../../test/support/test_doubles.dart';
 

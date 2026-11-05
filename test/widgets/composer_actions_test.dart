@@ -7,11 +7,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/services/speech_service.dart';
-import 'package:zagents/ui/widgets/composer.dart';
-import 'package:zagents/ui/widgets/composer_actions.dart';
+import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/services/speech_service.dart';
+import 'package:magents/ui/widgets/composer.dart';
+import 'package:magents/ui/widgets/composer_actions.dart';
 
 import '../support/test_doubles.dart';
 

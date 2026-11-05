@@ -424,7 +424,7 @@ class _FilesScreenState extends ConsumerState<FilesScreen> {
   }
 
   /// Copies the ACTIVE chat's whole workspace folder to the device file
-  /// manager (v1.29.0): MediaStore `Download/ZAgents/<chat>/` on Android
+  /// manager (v1.29.0): MediaStore `Download/MAgents/<chat>/` on Android
   /// 10+, zip + share sheet on older versions.
   Future<void> _exportChatFolder() async {
     final AppStrings strings = stringsOf(context);

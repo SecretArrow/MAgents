@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/llm_client.dart';
-import 'package:zagents/services/subagents.dart';
-import 'package:zagents/services/tool_executor.dart';
-import 'package:zagents/tools/tool_defs.dart';
+import 'package:magents/services/llm_client.dart';
+import 'package:magents/services/subagents.dart';
+import 'package:magents/services/tool_executor.dart';
+import 'package:magents/tools/tool_defs.dart';
 
 import '../support/test_doubles.dart';
 

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/chat_store.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/chat_store.dart';
 
 /// Writes a session file the way ChatStore.save would (plus raw variants
 /// for corrupted-file coverage).

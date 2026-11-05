@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/main.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/agent_controller.dart';
-import 'package:zagents/services/llm_client.dart';
+import 'package:magents/di.dart';
+import 'package:magents/main.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/agent_controller.dart';
+import 'package:magents/services/llm_client.dart';
 
 import '../support/test_doubles.dart';
 
@@ -96,7 +96,7 @@ void main() {
         child: Builder(
           builder: (BuildContext context) {
             container = ProviderScope.containerOf(context);
-            return const ZAgentsApp();
+            return const MAgentsApp();
           },
         ),
       ),
@@ -232,7 +232,7 @@ void main() {
           child: Builder(
             builder: (BuildContext context) {
               container = ProviderScope.containerOf(context);
-              return const ZAgentsApp();
+              return const MAgentsApp();
             },
           ),
         ),

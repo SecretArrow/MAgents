@@ -546,7 +546,7 @@ class SkillRegistry {
       );
       if (!skillMd.existsSync()) {
         throw const SkillRegistryException(
-          'No SKILL.md found — not a ZAgents/agents skill folder '
+          'No SKILL.md found — not a MAgents/agents skill folder '
           '(expected SKILL.md with at least a name + description).',
         );
       }
@@ -777,7 +777,7 @@ class SkillRegistry {
               'This skill declares a NATIVE dependency: '
                   '${manifest.requiresBins.join(', ')} — its commands '
                   'CANNOT run in the embedded runtime.',
-            'This skill ships with ZAgents — no download happened. '
+            'This skill ships with MAgents — no download happened. '
                 'Read the full instructions with skill_info("$name") '
                 'before first use and follow them exactly.',
           ],
@@ -881,7 +881,7 @@ class SkillRegistry {
     if (source.startsWith('builtin:')) {
       throw SkillRegistryException(
         '"$name" is bundled with the app ($source). Its updates ship with '
-        'ZAgents updates — there is nothing to update from here.',
+        'MAgents updates — there is nothing to update from here.',
       );
     }
     if (source.startsWith('file:')) {

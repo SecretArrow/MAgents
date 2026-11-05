@@ -4,15 +4,15 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/agent_controller.dart';
-import 'package:zagents/services/js_runtime.dart';
-import 'package:zagents/services/module_registry.dart';
-import 'package:zagents/services/llm_client.dart';
-import 'package:zagents/services/module_runtime.dart';
-import 'package:zagents/services/session_sandbox.dart';
+import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/agent_controller.dart';
+import 'package:magents/services/js_runtime.dart';
+import 'package:magents/services/module_registry.dart';
+import 'package:magents/services/llm_client.dart';
+import 'package:magents/services/module_runtime.dart';
+import 'package:magents/services/session_sandbox.dart';
 
 import '../support/test_doubles.dart';
 
@@ -574,7 +574,7 @@ void main() {
             c.read(llmClientProvider) as ScriptedLlmClient;
         final Map<String, dynamic> wireUser = llm.calls.first.last;
         final String content = wireUser['content'].toString();
-        expect(content, contains('# Task: build a NEW ZAgents chat module'));
+        expect(content, contains('# Task: build a NEW MAgents chat module'));
         expect(content, contains('a daily quote plugin'));
         // The raw command line itself never travels on the wire (the
         // brief legitimately mentions the /make_plugins command name).
@@ -602,7 +602,7 @@ void main() {
         (m) => m['role'] == 'user',
       ))['content'].toString();
       expect(first, replayed);
-      expect(replayed, contains('# Task: build a NEW ZAgents chat module'));
+      expect(replayed, contains('# Task: build a NEW MAgents chat module'));
     });
 
     test('a freshly built plugin stages with isNew and installs with '

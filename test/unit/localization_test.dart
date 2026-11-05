@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/models/models.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/models/models.dart';
 
 void main() {
   group('AppStrings resolution', () {

@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:file_selector/file_selector.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
-import 'package:zagents/services/attachment_service.dart';
+import 'package:magents/services/attachment_service.dart';
 
 /// Unit tests for [AttachmentService] — no platform channels: the picker is
 /// faked with path-backed XFiles and the sandbox resolver with temp dirs.

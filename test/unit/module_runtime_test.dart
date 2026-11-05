@@ -1,12 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/agent_composer.dart';
-import 'package:zagents/services/device_shell.dart';
-import 'package:zagents/services/js_runtime.dart';
-import 'package:zagents/services/module_registry.dart';
-import 'package:zagents/services/module_runtime.dart';
-import 'package:zagents/services/session_sandbox.dart';
+import 'package:magents/services/agent_composer.dart';
+import 'package:magents/services/device_shell.dart';
+import 'package:magents/services/js_runtime.dart';
+import 'package:magents/services/module_registry.dart';
+import 'package:magents/services/module_runtime.dart';
+import 'package:magents/services/session_sandbox.dart';
 
 import '../support/test_doubles.dart';
 

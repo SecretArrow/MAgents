@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/services/module_registry.dart';
-import 'package:zagents/ui/screens/modules_screen.dart';
+import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/services/module_registry.dart';
+import 'package:magents/ui/screens/modules_screen.dart';
 
 import '../support/test_doubles.dart';
 
-import 'package:zagents/services/module_remote.dart';
+import 'package:magents/services/module_remote.dart';
 
 /// In-memory ModuleRegistry test double: no disk IO inside the async test
 /// zone, records every mutation for assertions.
@@ -272,7 +272,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('SDK documentation'), findsOneWidget);
-    expect(find.textContaining('ZAgents Module SDK'), findsWidgets);
+    expect(find.textContaining('MAgents Module SDK'), findsWidgets);
   });
 
   testWidgets('permission consent dialog lists requested capabilities and '
@@ -476,7 +476,7 @@ void main() {
     );
     expect(
       field.controller!.text,
-      'https://raw.githubusercontent.com/SecretArrow/ZAgents/main/samples/'
+      'https://raw.githubusercontent.com/SecretArrow/MAgents/main/samples/'
       'counter.zip',
     );
   });

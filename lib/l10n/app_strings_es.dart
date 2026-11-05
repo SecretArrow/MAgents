@@ -1,4 +1,4 @@
-// Spanish (Español) strings bundle for ZAgents — v1.44.0.
+// Spanish (Español) strings bundle for MAgents — v1.44.0.
 //
 // Full parity with `AppStringsEn` in `app_strings.dart`: same members,
 // same order, everything translated. Language registration (language
@@ -88,7 +88,7 @@ class AppStringsEs implements AppStrings {
   String get updateBannerTitle => 'Actualización disponible';
 
   @override
-  String get updateBannerBody => 'Hay una versión nueva de ZAgents.';
+  String get updateBannerBody => 'Hay una versión nueva de MAgents.';
 
   @override
   String get updateOpenRelease => 'Ver release';
@@ -405,7 +405,7 @@ class AppStringsEs implements AppStrings {
   String get filesExporting => 'Exportando la carpeta de este chat…';
   @override
   String filesExportDone(int count) =>
-      'Carpeta del chat guardada en Downloads/ZAgents ($count archivos).';
+      'Carpeta del chat guardada en Downloads/MAgents ($count archivos).';
   @override
   String filesExportZipReady(int count) =>
       'Carpeta del chat comprimida en ZIP ($count archivos) — elige dónde '
@@ -893,7 +893,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get appLockSection => 'Bloqueo de la app';
   @override
-  String get appLockTitle => 'ZAgents está bloqueado';
+  String get appLockTitle => 'MAgents está bloqueado';
   @override
   String get appLockEnableTitle => 'Bloquear la app';
   @override
@@ -922,7 +922,7 @@ class AppStringsEs implements AppStrings {
   @override
   String get appLockUseBiometric => 'Usar biometría';
   @override
-  String get appLockBiometricReason => 'Desbloquear ZAgents';
+  String get appLockBiometricReason => 'Desbloquear MAgents';
   @override
   String get notifyOnDoneTitle => 'Notificar cuando termine una tarea';
   @override
@@ -937,7 +937,7 @@ class AppStringsEs implements AppStrings {
       : '\u201C$sessionTitle\u201D se detuvo con un error — toca para abrirla.';
 
   @override
-  String get exitAppTitle => '¿Salir de ZAgents?';
+  String get exitAppTitle => '¿Salir de MAgents?';
   @override
   String get exitAppBody =>
       'Las tareas del agente siguen en ejecución en segundo plano mientras '
@@ -948,7 +948,7 @@ class AppStringsEs implements AppStrings {
   String get batteryTitle => 'Fiabilidad en segundo plano';
   @override
   String get batterySubtitle =>
-      'Pide a Android eximir a ZAgents de la optimización de batería para '
+      'Pide a Android eximir a MAgents de la optimización de batería para '
       'que las ejecuciones largas del agente nunca se pause en segundo '
       'plano.';
   @override
@@ -962,7 +962,7 @@ class AppStringsEs implements AppStrings {
   String get aboutSection => 'Acerca de';
   @override
   String get aboutBody =>
-      'ZAgents es una app de chat con agente para Android inspirada en el '
+      'MAgents es una app de chat con agente para Android inspirada en el '
       'modo agente de chat.z.ai: trae tu propio proveedor compatible con '
       'OpenAI (OpenRouter, InferHub, Z.AI, OpenAI, DeepSeek, Groq y más), '
       'ejecuta muchos chats en paralelo con ejecución real en segundo '
@@ -987,7 +987,7 @@ class AppStringsEs implements AppStrings {
   String get helpTileSubtitle =>
       'Cómo usar cada función, explicado en lenguaje sencillo';
   @override
-  String get aboutTileTitle => 'Acerca de ZAgents';
+  String get aboutTileTitle => 'Acerca de MAgents';
   @override
   String get aboutTileSubtitle => 'Versión, creador y qué puede hacer esta app';
   @override
@@ -1004,7 +1004,7 @@ class AppStringsEs implements AppStrings {
   String get aboutWhatsInside => 'Qué hay dentro';
   @override
   String get aboutDisclaimer =>
-      'ZAgents es una app independiente de Maragung, inspirada en la '
+      'MAgents es una app independiente de Maragung, inspirada en la '
       'interfaz del modo agente de chat.z.ai, y no está afiliada a Z.AI. '
       'Las skills y los módulos se ejecutan localmente en este '
       'dispositivo; la app nunca pide seed phrases ni claves privadas, y '
@@ -1014,7 +1014,7 @@ class AppStringsEs implements AppStrings {
   String get helpTitle => 'Ayuda';
   @override
   String get helpIntro =>
-      'Todo lo que ZAgents puede hacer y cómo usarlo. Las secciones '
+      'Todo lo que MAgents puede hacer y cómo usarlo. Las secciones '
       'siguen el orden en que las encontrarás en la app.';
   @override
   List<HelpEntry> get helpTopics => const [
@@ -1108,7 +1108,7 @@ class AppStringsEs implements AppStrings {
       'Cada chat tiene una carpeta de workspace privada — las subidas, '
           'los archivos generados y el estado de los módulos viven ahí, '
           'invisibles para otros chats. Exporta un workspace al gestor '
-          'de archivos de tu dispositivo (Downloads/ZAgents/<chat>) con '
+          'de archivos de tu dispositivo (Downloads/MAgents/<chat>) con '
           'un toque, y al eliminar un chat se borra todo su workspace. '
           'Las subidas de archivos admiten la extracción ZIP, incluidos '
           'los archivos protegidos con contraseña.',
@@ -1476,7 +1476,7 @@ class AppStringsEs implements AppStrings {
 
   // -- Background service notification ----------------------------------
   @override
-  String get notifTitle => 'El agente de ZAgents está en ejecución';
+  String get notifTitle => 'El agente de MAgents está en ejecución';
   @override
   String get notifProcessing => 'Procesando tu solicitud…';
   @override

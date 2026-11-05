@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/module_registry.dart';
-import 'package:zagents/services/module_remote.dart';
+import 'package:magents/services/module_registry.dart';
+import 'package:magents/services/module_remote.dart';
 
 /// Builds a ZIP in memory from {path: bytes} (same helper pattern as the
 /// registry tests).

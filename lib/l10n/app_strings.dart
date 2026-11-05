@@ -237,7 +237,7 @@ abstract class AppStrings {
   String get filesHint;
 
   /// v1.29.0: copies the ACTIVE chat's workspace folder to the device
-  /// file manager (`Downloads/ZAgents/<chat>` via MediaStore).
+  /// file manager (`Downloads/MAgents/<chat>` via MediaStore).
   String get filesExportFolder;
 
   /// Progress dialog text while the folder export runs.
@@ -743,7 +743,7 @@ class AppStringsEn implements AppStrings {
   String get updateBannerTitle => 'Update available';
 
   @override
-  String get updateBannerBody => 'A newer version of ZAgents is out.';
+  String get updateBannerBody => 'A newer version of MAgents is out.';
 
   @override
   String get updateOpenRelease => 'View release';
@@ -1054,7 +1054,7 @@ class AppStringsEn implements AppStrings {
   String get filesExporting => 'Exporting this chat\'s folder…';
   @override
   String filesExportDone(int count) =>
-      'Chat folder saved to Downloads/ZAgents ($count files).';
+      'Chat folder saved to Downloads/MAgents ($count files).';
   @override
   String filesExportZipReady(int count) =>
       'Chat folder zipped ($count files) — choose where to save or send it.';
@@ -1526,7 +1526,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get appLockSection => 'App lock';
   @override
-  String get appLockTitle => 'ZAgents is locked';
+  String get appLockTitle => 'MAgents is locked';
   @override
   String get appLockEnableTitle => 'Lock the app';
   @override
@@ -1555,7 +1555,7 @@ class AppStringsEn implements AppStrings {
   @override
   String get appLockUseBiometric => 'Use biometrics';
   @override
-  String get appLockBiometricReason => 'Unlock ZAgents';
+  String get appLockBiometricReason => 'Unlock MAgents';
   @override
   String get notifyOnDoneTitle => 'Notify when a task finishes';
   @override
@@ -1570,7 +1570,7 @@ class AppStringsEn implements AppStrings {
       : '\u201C$sessionTitle\u201D stopped with an error — tap to open it.';
 
   @override
-  String get exitAppTitle => 'Exit ZAgents?';
+  String get exitAppTitle => 'Exit MAgents?';
   @override
   String get exitAppBody =>
       'Agent tasks keep running in the background while the app is closed.';
@@ -1580,7 +1580,7 @@ class AppStringsEn implements AppStrings {
   String get batteryTitle => 'Background reliability';
   @override
   String get batterySubtitle =>
-      'Ask Android to exempt ZAgents from battery optimization so long '
+      'Ask Android to exempt MAgents from battery optimization so long '
       'agent runs are never paused in the background.';
   @override
   String get batteryRestricted => 'Optimized (may pause runs) — tap to exempt';
@@ -1591,7 +1591,7 @@ class AppStringsEn implements AppStrings {
   String get aboutSection => 'About';
   @override
   String get aboutBody =>
-      'ZAgents is an Android agent-chat app styled after the chat.z.ai '
+      'MAgents is an Android agent-chat app styled after the chat.z.ai '
       'agent mode: bring your own OpenAI-compatible provider (OpenRouter, '
       'InferHub, Z.AI, OpenAI, DeepSeek, Groq, and more), run many chats '
       'in parallel with real background execution, plan-first Todos with '
@@ -1614,7 +1614,7 @@ class AppStringsEn implements AppStrings {
   String get helpTileSubtitle =>
       'Complete how-to for every feature, in plain language';
   @override
-  String get aboutTileTitle => 'About ZAgents';
+  String get aboutTileTitle => 'About MAgents';
   @override
   String get aboutTileSubtitle => 'Version, creator, and what this app can do';
   @override
@@ -1630,7 +1630,7 @@ class AppStringsEn implements AppStrings {
   String get aboutWhatsInside => 'What\'s inside';
   @override
   String get aboutDisclaimer =>
-      'ZAgents is an independent app by Maragung, styled after the '
+      'MAgents is an independent app by Maragung, styled after the '
       'chat.z.ai agent mode UI, and is not affiliated with Z.AI. Skills '
       'and modules run locally on this device; the app never asks for '
       'seed phrases or private keys, and every wallet action that moves '
@@ -1639,7 +1639,7 @@ class AppStringsEn implements AppStrings {
   String get helpTitle => 'Help';
   @override
   String get helpIntro =>
-      'Everything ZAgents can do, and how to use it. Sections follow the '
+      'Everything MAgents can do, and how to use it. Sections follow the '
       'order you will meet them in the app.';
   @override
   List<HelpEntry> get helpTopics => const [
@@ -1726,7 +1726,7 @@ class AppStringsEn implements AppStrings {
       'Every chat has a private workspace folder — uploads, generated '
           'files and module state live there, invisible to other chats. '
           'Export a workspace to your device file manager '
-          '(Downloads/ZAgents/<chat>) with one tap, and deleting a chat '
+          '(Downloads/MAgents/<chat>) with one tap, and deleting a chat '
           'removes its whole workspace. File uploads support zip '
           'extraction, including password-protected archives.',
     ),
@@ -2076,7 +2076,7 @@ class AppStringsEn implements AppStrings {
 
   // -- Background service notification ----------------------------------
   @override
-  String get notifTitle => 'ZAgents agent is running';
+  String get notifTitle => 'MAgents agent is running';
   @override
   String get notifProcessing => 'Processing your request…';
   @override
@@ -2184,7 +2184,7 @@ class AppStringsId implements AppStrings {
 
   @override
   String get updateBannerBody =>
-      'Versi ZAgents yang lebih baru sudah tersedia.';
+      'Versi MAgents yang lebih baru sudah tersedia.';
 
   @override
   String get updateOpenRelease => 'Lihat rilis';
@@ -2496,7 +2496,7 @@ class AppStringsId implements AppStrings {
   String get filesExporting => 'Mengekspor folder chat ini…';
   @override
   String filesExportDone(int count) =>
-      'Folder chat tersimpan di Downloads/ZAgents ($count berkas).';
+      'Folder chat tersimpan di Downloads/MAgents ($count berkas).';
   @override
   String filesExportZipReady(int count) =>
       'Folder chat dikemas menjadi ZIP ($count berkas) — pilih tempat '
@@ -2975,7 +2975,7 @@ class AppStringsId implements AppStrings {
   @override
   String get appLockSection => 'Kunci aplikasi';
   @override
-  String get appLockTitle => 'ZAgents terkunci';
+  String get appLockTitle => 'MAgents terkunci';
   @override
   String get appLockEnableTitle => 'Kunci aplikasi';
   @override
@@ -3004,7 +3004,7 @@ class AppStringsId implements AppStrings {
   @override
   String get appLockUseBiometric => 'Gunakan biometrik';
   @override
-  String get appLockBiometricReason => 'Buka kunci ZAgents';
+  String get appLockBiometricReason => 'Buka kunci MAgents';
   @override
   String get notifyOnDoneTitle => 'Beri tahu saat tugas selesai';
   @override
@@ -3019,7 +3019,7 @@ class AppStringsId implements AppStrings {
       : '\u201C$sessionTitle\u201D berhenti karena error — ketuk untuk membuka.';
 
   @override
-  String get exitAppTitle => 'Keluar dari ZAgents?';
+  String get exitAppTitle => 'Keluar dari MAgents?';
   @override
   String get exitAppBody =>
       'Tugas agent tetap berjalan di latar belakang selama aplikasi ditutup.';
@@ -3029,7 +3029,7 @@ class AppStringsId implements AppStrings {
   String get batteryTitle => 'Keandalan latar belakang';
   @override
   String get batterySubtitle =>
-      'Minta Android mengecualikan ZAgents dari optimisasi baterai agar '
+      'Minta Android mengecualikan MAgents dari optimisasi baterai agar '
       'proses agent yang lama tidak pernah dijeda di latar belakang.';
   @override
   String get batteryRestricted =>
@@ -3042,7 +3042,7 @@ class AppStringsId implements AppStrings {
   String get aboutSection => 'Tentang';
   @override
   String get aboutBody =>
-      'ZAgents adalah aplikasi chat agen Android bergaya agent mode '
+      'MAgents adalah aplikasi chat agen Android bergaya agent mode '
       'chat.z.ai: bawa provider OpenAI-compatible Anda sendiri '
       '(OpenRouter, InferHub, Z.AI, OpenAI, DeepSeek, Groq, dan '
       'lainnya), jalankan banyak chat paralel dengan proses latar '
@@ -3066,7 +3066,7 @@ class AppStringsId implements AppStrings {
   String get helpTileSubtitle =>
       'Panduan lengkap semua fitur, dengan bahasa yang mudah';
   @override
-  String get aboutTileTitle => 'Tentang ZAgents';
+  String get aboutTileTitle => 'Tentang MAgents';
   @override
   String get aboutTileSubtitle => 'Versi, pembuat, dan kemampuan aplikasi ini';
   @override
@@ -3083,7 +3083,7 @@ class AppStringsId implements AppStrings {
   String get aboutWhatsInside => 'Isi aplikasi';
   @override
   String get aboutDisclaimer =>
-      'ZAgents adalah aplikasi independen karya Maragung yang bergaya '
+      'MAgents adalah aplikasi independen karya Maragung yang bergaya '
       'antarmuka agent mode chat.z.ai dan tidak berafiliasi dengan '
       'Z.AI. Skill dan modul berjalan lokal di perangkat ini; aplikasi '
       'tidak pernah meminta seed phrase atau private key, dan setiap '
@@ -3093,7 +3093,7 @@ class AppStringsId implements AppStrings {
   String get helpTitle => 'Bantuan';
   @override
   String get helpIntro =>
-      'Semua yang bisa dilakukan ZAgents, dan cara memakainya. Bagian '
+      'Semua yang bisa dilakukan MAgents, dan cara memakainya. Bagian '
       'diurutkan sesuai urutan Anda menemuinya di aplikasi.';
   @override
   List<HelpEntry> get helpTopics => const [
@@ -3182,7 +3182,7 @@ class AppStringsId implements AppStrings {
       'Setiap chat punya folder ruang kerja pribadi — unggahan, file '
           'hasil, dan state modul tinggal di sana, tak terlihat chat '
           'lain. Ekspor ruang kerja ke file manager perangkat '
-          '(Downloads/ZAgents/<chat>) dengan satu ketukan, dan menghapus '
+          '(Downloads/MAgents/<chat>) dengan satu ketukan, dan menghapus '
           'chat ikut menghapus seluruh ruang kerjanya. Unggahan file '
           'mendukung ekstraksi zip, termasuk arsip berpassword.',
     ),
@@ -3539,7 +3539,7 @@ class AppStringsId implements AppStrings {
 
   // -- Background service notification ----------------------------------
   @override
-  String get notifTitle => 'Agent ZAgents sedang berjalan';
+  String get notifTitle => 'Agent MAgents sedang berjalan';
   @override
   String get notifProcessing => 'Memproses permintaan Anda…';
   @override

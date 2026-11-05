@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/skill_registry.dart';
-import 'package:zagents/services/tool_executor.dart';
+import 'package:magents/services/skill_registry.dart';
+import 'package:magents/services/tool_executor.dart';
 
 import '../support/test_doubles.dart';
 

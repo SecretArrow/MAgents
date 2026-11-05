@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/js_runtime.dart';
+import 'package:magents/services/js_runtime.dart';
 
 void main() {
   group('zResolveFsPath (module fs bridge, v1.29.0)', () {

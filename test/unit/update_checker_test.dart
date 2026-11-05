@@ -3,14 +3,14 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:zagents/services/update_checker.dart';
+import 'package:magents/services/update_checker.dart';
 
 const String _tagUrl =
-    'https://github.com/SecretArrow/ZAgents/releases/tag/v1.44.0';
+    'https://github.com/SecretArrow/MAgents/releases/tag/v1.44.0';
 
 const String _universalApkUrl =
-    'https://github.com/SecretArrow/ZAgents/releases/download/v1.44.0/'
-    'ZAgents-1.44.0-v1.44.0.apk';
+    'https://github.com/SecretArrow/MAgents/releases/download/v1.44.0/'
+    'MAgents-1.44.0-v1.44.0.apk';
 
 /// Builds a GitHub `/releases/latest`-shaped payload.
 Map<String, Object?> _release({
@@ -34,12 +34,12 @@ void main() {
       final Map<String, Object?> payload = _release(
         assets: <Object?>[
           _apk(
-            'ZAgents-1.44.0-v1.44.0-arm64-v8a.apk',
+            'MAgents-1.44.0-v1.44.0-arm64-v8a.apk',
             'https://example.test/zagents-arm64-v8a.apk',
           ),
-          _apk('ZAgents-1.44.0-v1.44.0.apk', _universalApkUrl),
+          _apk('MAgents-1.44.0-v1.44.0.apk', _universalApkUrl),
           _apk(
-            'ZAgents-1.44.0-v1.44.0-x86_64.apk',
+            'MAgents-1.44.0-v1.44.0-x86_64.apk',
             'https://example.test/zagents-x86_64.apk',
           ),
         ],
@@ -64,10 +64,10 @@ void main() {
       expect(requests, hasLength(1));
       expect(
         requests.single.url.toString(),
-        'https://api.github.com/repos/SecretArrow/ZAgents/releases/latest',
+        'https://api.github.com/repos/SecretArrow/MAgents/releases/latest',
       );
       expect(requests.single.headers['Accept'], 'application/vnd.github+json');
-      expect(requests.single.headers['User-Agent'], 'ZAgents-UpdateChecker');
+      expect(requests.single.headers['User-Agent'], 'MAgents-UpdateChecker');
     });
 
     test('repo parameter drives the API endpoint', () async {
@@ -178,11 +178,11 @@ void main() {
       final Map<String, Object?> payload = _release(
         assets: <Object?>[
           _apk(
-            'ZAgents-1.44.0-v1.44.0-arm64-v8a.apk',
+            'MAgents-1.44.0-v1.44.0-arm64-v8a.apk',
             'https://example.test/zagents-arm64-v8a.apk',
           ),
           _apk(
-            'ZAgents-1.44.0-v1.44.0-x86_64.apk',
+            'MAgents-1.44.0-v1.44.0-x86_64.apk',
             'https://example.test/zagents-x86_64.apk',
           ),
         ],

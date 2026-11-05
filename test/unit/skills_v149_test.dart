@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:archive/archive.dart' as ar;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/settings_repository.dart';
-import 'package:zagents/services/skill_registry.dart';
+import 'package:magents/services/settings_repository.dart';
+import 'package:magents/services/skill_registry.dart';
 
 /// v1.49.0 Skills manager coverage (temp-dir SkillRegistry, no widgets):
 ///

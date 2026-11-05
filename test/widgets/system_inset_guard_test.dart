@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zagents/main.dart';
-import 'package:zagents/ui/screens/home_shell.dart';
+import 'package:magents/main.dart';
+import 'package:magents/ui/screens/home_shell.dart';
 
 import '../support/test_doubles.dart';
 
@@ -17,7 +17,7 @@ import '../support/test_doubles.dart';
 /// reported as zero downstream. These tests pin that contract at both
 /// levels:
 ///   1. the builder in isolation (exact geometry, no double padding);
-///   2. the real ZAgentsApp shell + a dialog (user-visible geometry).
+///   2. the real MAgentsApp shell + a dialog (user-visible geometry).
 /// Sets the fake system-bar insets (in LOGICAL pixels — FakeViewPadding
 /// takes physical pixels, so the value is scaled by the device pixel
 /// ratio here) and resets them when the test ends.
@@ -103,7 +103,7 @@ void main() {
     });
   });
 
-  group('ZAgentsApp real shell under system insets', () {
+  group('MAgentsApp real shell under system insets', () {
     late Directory tempDir;
 
     setUp(() async {
@@ -119,7 +119,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: <Override>[...testOverrides(dir: tempDir)],
-          child: const ZAgentsApp(),
+          child: const MAgentsApp(),
         ),
       );
       await tester.pumpAndSettle(

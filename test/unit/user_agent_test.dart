@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/data/user_agents.g.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/models/user_agent.dart';
+import 'package:magents/data/user_agents.g.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/models/user_agent.dart';
 
 void main() {
   // ---------------------------------------------------------------------

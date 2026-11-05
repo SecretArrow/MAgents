@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/agent_controller.dart' show ChatState;
-import 'package:zagents/ui/theme.dart';
-import 'package:zagents/ui/widgets/plan_panel.dart';
+import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/agent_controller.dart' show ChatState;
+import 'package:magents/ui/theme.dart';
+import 'package:magents/ui/widgets/plan_panel.dart';
 
 const List<TodoItem> _plan = <TodoItem>[
   TodoItem(content: 'research topic', status: TodoStatus.completed),

@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/image_downscale.dart';
+import 'package:magents/services/image_downscale.dart';
 
 Future<List<int>> _solidPng(int width, int height) async {
   final ui.PictureRecorder recorder = ui.PictureRecorder();

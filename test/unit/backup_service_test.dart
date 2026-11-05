@@ -3,13 +3,13 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/backup_service.dart';
-import 'package:zagents/services/chat_store.dart';
-import 'package:zagents/services/context_repository.dart';
-import 'package:zagents/services/settings_repository.dart';
-import 'package:zagents/services/session_export.dart';
-import 'package:zagents/services/token_stats.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/backup_service.dart';
+import 'package:magents/services/chat_store.dart';
+import 'package:magents/services/context_repository.dart';
+import 'package:magents/services/settings_repository.dart';
+import 'package:magents/services/session_export.dart';
+import 'package:magents/services/token_stats.dart';
 
 void main() {
   late Directory tempDir;
@@ -200,7 +200,7 @@ void main() {
       expect(md, contains('Tolong riset X'));
       expect(md, contains('**glm-4.6**'));
       expect(md, contains('Berikut hasilnya.'));
-      expect(md, contains('Exported from ZAgents'));
+      expect(md, contains('Exported from MAgents'));
       expect(md, contains('2 messages'));
     });
 

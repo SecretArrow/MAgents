@@ -4,7 +4,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:zagents/services/remote_guard.dart';
+import 'package:magents/services/remote_guard.dart';
 
 /// v1.40.0: every user/agent supplied remote source (skills, npm packages)
 /// goes through [RemoteGuard]. These tests pin the two guarantees the chat

@@ -3,13 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/main.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/llm_client.dart';
-import 'package:zagents/services/module_registry.dart';
-import 'package:zagents/ui/widgets/message_bubble.dart';
+import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/main.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/llm_client.dart';
+import 'package:magents/services/module_registry.dart';
+import 'package:magents/ui/widgets/message_bubble.dart';
 
 import '../support/test_doubles.dart';
 import 'modules_screen_test.dart' show ScriptedModuleRegistry;
@@ -60,7 +60,7 @@ void main() {
     addTearDown(container.dispose);
     return UncontrolledProviderScope(
       container: container,
-      child: const ZAgentsApp(),
+      child: const MAgentsApp(),
     );
   }
 

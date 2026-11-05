@@ -1,4 +1,4 @@
-package com.secretarrow.zagents
+package com.secretarrow.magents
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -14,7 +14,7 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 /**
- * Bridges the Dart agent loop to [ZAgentsForegroundService] so a running
+ * Bridges the Dart agent loop to [MAgentsForegroundService] so a running
  * agent task survives backgrounding (foreground service + wake lock +
  * progress notification), and posts local "task finished" notifications
  * (v1.18.0) when a run completes while the app is in the background.
@@ -49,7 +49,7 @@ class MainActivity : FlutterFragmentActivity() {
                             // exists since API 26; below that a plain start
                             // (while the app is in the foreground) is legal.
                             val intent = serviceIntent(
-                                ZAgentsForegroundService.ACTION_START,
+                                MAgentsForegroundService.ACTION_START,
                                 call.argument<String>("title"),
                                 call.argument<String>("text"),
                             )
@@ -66,7 +66,7 @@ class MainActivity : FlutterFragmentActivity() {
                             // which is exactly when update() is called.
                             startService(
                                 serviceIntent(
-                                    ZAgentsForegroundService.ACTION_UPDATE,
+                                    MAgentsForegroundService.ACTION_UPDATE,
                                     null,
                                     call.argument<String>("text"),
                                 ),
@@ -75,7 +75,7 @@ class MainActivity : FlutterFragmentActivity() {
                         }
                         "stop" -> {
                             stopService(
-                                Intent(this, ZAgentsForegroundService::class.java),
+                                Intent(this, MAgentsForegroundService::class.java),
                             )
                             true
                         }
@@ -89,7 +89,7 @@ class MainActivity : FlutterFragmentActivity() {
                             // dropped.
                             requestNotificationPermissionIfNeeded()
                             startService(sessionIntent(
-                                ZAgentsForegroundService.ACTION_START_SESSION,
+                                MAgentsForegroundService.ACTION_START_SESSION,
                                 call.argument<String>("sessionId"),
                                 call.argument<String>("title"),
                                 call.argument<String>("text"),
@@ -98,7 +98,7 @@ class MainActivity : FlutterFragmentActivity() {
                         }
                         "updateSession" -> {
                             startService(sessionIntent(
-                                ZAgentsForegroundService.ACTION_UPDATE_SESSION,
+                                MAgentsForegroundService.ACTION_UPDATE_SESSION,
                                 call.argument<String>("sessionId"),
                                 null,
                                 call.argument<String>("text"),
@@ -107,7 +107,7 @@ class MainActivity : FlutterFragmentActivity() {
                         }
                         "stopSession" -> {
                             startService(sessionIntent(
-                                ZAgentsForegroundService.ACTION_STOP_SESSION,
+                                MAgentsForegroundService.ACTION_STOP_SESSION,
                                 call.argument<String>("sessionId"),
                                 null,
                                 null,
@@ -119,7 +119,7 @@ class MainActivity : FlutterFragmentActivity() {
                         }
                         "notifyDone" -> {
                             notifyDone(
-                                title = call.argument<String>("title") ?: "ZAgents",
+                                title = call.argument<String>("title") ?: "MAgents",
                                 text = call.argument<String>("text") ?: "",
                                 sessionId = call.argument<String>("sessionId"),
                             )
@@ -142,7 +142,7 @@ class MainActivity : FlutterFragmentActivity() {
                         }
                         "exportChatFolder" -> {
                             // v1.29.0: copy a chat workspace folder into
-                            // Download/ZAgents/<name>/ via MediaStore (no
+                            // Download/MAgents/<name>/ via MediaStore (no
                             // permission needed on API 29+). Replies with
                             // the exported file count (its own result).
                             @Suppress("UNCHECKED_CAST")
@@ -315,19 +315,19 @@ class MainActivity : FlutterFragmentActivity() {
     }
 
     private fun serviceIntent(action: String, title: String?, text: String?): Intent =
-        Intent(this, ZAgentsForegroundService::class.java).apply {
+        Intent(this, MAgentsForegroundService::class.java).apply {
             this.action = action
-            putExtra(ZAgentsForegroundService.EXTRA_TITLE, title)
-            putExtra(ZAgentsForegroundService.EXTRA_TEXT, text)
+            putExtra(MAgentsForegroundService.EXTRA_TITLE, title)
+            putExtra(MAgentsForegroundService.EXTRA_TEXT, text)
         }
 
     /// v1.42.0: service intent carrying the per-chat session id.
     private fun sessionIntent(action: String, sessionId: String?, title: String?, text: String?): Intent =
-        Intent(this, ZAgentsForegroundService::class.java).apply {
+        Intent(this, MAgentsForegroundService::class.java).apply {
             this.action = action
-            putExtra(ZAgentsForegroundService.EXTRA_SESSION_ID, sessionId)
-            putExtra(ZAgentsForegroundService.EXTRA_TITLE, title)
-            putExtra(ZAgentsForegroundService.EXTRA_TEXT, text)
+            putExtra(MAgentsForegroundService.EXTRA_SESSION_ID, sessionId)
+            putExtra(MAgentsForegroundService.EXTRA_TITLE, title)
+            putExtra(MAgentsForegroundService.EXTRA_TEXT, text)
         }
 
     /// v1.42.0 — asks the user for POST_NOTIFICATIONS on Android 13+ (the
@@ -379,7 +379,7 @@ class MainActivity : FlutterFragmentActivity() {
         }
     }
 
-    /// Copies every given file into `Download/ZAgents/<name>/<rel>` via
+    /// Copies every given file into `Download/MAgents/<name>/<rel>` via
     /// MediaStore (v1.29.0). Own previous export of the SAME folder is
     /// removed first, so re-exporting replaces it instead of piling up
     /// duplicates. Own-app MediaStore contributions need no permission on
@@ -400,7 +400,7 @@ class MainActivity : FlutterFragmentActivity() {
                 .trim()
                 .take(60)
                 .ifEmpty { "chat" }
-            val baseRel = "Download/ZAgents/$safeName/"
+            val baseRel = "Download/MAgents/$safeName/"
             val resolver = contentResolver
             val downloads = android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI
             // Replace the previous export of this exact folder (own files).

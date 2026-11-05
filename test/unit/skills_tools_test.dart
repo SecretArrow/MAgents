@@ -6,12 +6,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/llm_client.dart';
-import 'package:zagents/services/script_fetch_proxy.dart';
-import 'package:zagents/services/skill_registry.dart';
-import 'package:zagents/services/tool_executor.dart';
+import 'package:magents/di.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/llm_client.dart';
+import 'package:magents/services/script_fetch_proxy.dart';
+import 'package:magents/services/skill_registry.dart';
+import 'package:magents/services/tool_executor.dart';
 
 import '../support/test_doubles.dart';
 
@@ -249,7 +249,7 @@ void main() {
               headers: <String, String>{'content-type': 'application/json'},
             );
           }),
-          resolveUserAgent: () => 'ZAgentsTest/1.0',
+          resolveUserAgent: () => 'MAgentsTest/1.0',
         );
         final Map<String, dynamic>? res = await proxy.call(
           'https://example.com/api',
@@ -258,7 +258,7 @@ void main() {
         );
         expect(res!['status'], 200);
         expect(res['body'], '{"ok":true}');
-        expect(seenUa, 'ZAgentsTest/1.0');
+        expect(seenUa, 'MAgentsTest/1.0');
       },
     );
 

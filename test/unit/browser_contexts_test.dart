@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/browser_automation.dart';
-import 'package:zagents/services/browser_session_isolation.dart';
+import 'package:magents/services/browser_automation.dart';
+import 'package:magents/services/browser_session_isolation.dart';
 
 /// Cookie gateway double recording every mutation.
 class _Jar implements CookieGateway {

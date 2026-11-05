@@ -8,10 +8,10 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/agentrouter_client.dart';
-import 'package:zagents/services/llm_client.dart';
-import 'package:zagents/services/wire_transports.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/agentrouter_client.dart';
+import 'package:magents/services/llm_client.dart';
+import 'package:magents/services/wire_transports.dart';
 
 const String _responsesHintBody =
     '{"error":{"message":"模型 gpt-6.1-sol 不支持 /v1/chat/completions 接口，'

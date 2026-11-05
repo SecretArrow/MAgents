@@ -5,10 +5,10 @@ import 'package:archive/archive.dart' as ar;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/chat_store.dart';
-import 'package:zagents/services/skill_registry.dart';
-import 'package:zagents/services/tool_executor.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/chat_store.dart';
+import 'package:magents/services/skill_registry.dart';
+import 'package:magents/services/tool_executor.dart';
 
 import '../support/test_doubles.dart';
 

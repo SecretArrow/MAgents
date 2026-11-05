@@ -46,7 +46,7 @@
         </activity>
         <!-- Keeps the agent loop alive while the app is backgrounded. -->
         <service
-            android:name=".ZAgentsForegroundService"
+            android:name=".MAgentsForegroundService"
             android:exported="false"
             android:foregroundServiceType="dataSync"/>
         <!-- Don't delete the meta-data below.

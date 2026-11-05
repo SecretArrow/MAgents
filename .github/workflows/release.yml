@@ -158,7 +158,7 @@ jobs:
           KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD || secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD || secrets.KEYSTORE_STORE_PASSWORD || secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_ALIAS: ${{ steps.keystore.outputs.alias }}
-          ZAGENTS_REQUIRE_SIGNING: 'true'
+          MAGENTS_REQUIRE_SIGNING: 'true'
         run: flutter build apk --release
 
       # v1.41.4 — also ship per-ABI splits (arm64-v8a, armeabi-v7a, x86_64).
@@ -170,7 +170,7 @@ jobs:
           KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD || secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD || secrets.KEYSTORE_STORE_PASSWORD || secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_ALIAS: ${{ steps.keystore.outputs.alias }}
-          ZAGENTS_REQUIRE_SIGNING: 'true'
+          MAGENTS_REQUIRE_SIGNING: 'true'
         run: flutter build apk --release --split-per-abi
 
       # Also ship an Android App Bundle (.aab) as the 5th release artifact
@@ -184,7 +184,7 @@ jobs:
           KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD || secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD || secrets.KEYSTORE_STORE_PASSWORD || secrets.KEYSTORE_PASSWORD }}
           KEYSTORE_ALIAS: ${{ steps.keystore.outputs.alias }}
-          ZAGENTS_REQUIRE_SIGNING: 'true'
+          MAGENTS_REQUIRE_SIGNING: 'true'
         run: flutter build appbundle --release
 
       - name: Verify APK signatures (universal + every ABI split)
@@ -243,17 +243,17 @@ jobs:
           mkdir -p build-outputs
           # Universal APK (all ABIs) keeps the legacy, unchanged name.
           cp build/app/outputs/flutter-apk/app-release.apk \
-             "build-outputs/ZAgents-${VERSION}-${GITHUB_REF_NAME}.apk"
+             "build-outputs/MAgents-${VERSION}-${GITHUB_REF_NAME}.apk"
           # Per-ABI splits get an explicit -<abi> suffix so users can pick
           # the right download (arm64-v8a / armeabi-v7a / x86_64).
           shopt -s nullglob
           for APK in build/app/outputs/flutter-apk/app-*-release.apk; do
             ABI=$(basename "$APK" | sed 's/^app-//; s/-release\.apk$//')
-            cp "$APK" "build-outputs/ZAgents-${VERSION}-${GITHUB_REF_NAME}-${ABI}.apk"
+            cp "$APK" "build-outputs/MAgents-${VERSION}-${GITHUB_REF_NAME}-${ABI}.apk"
           done
           # Android App Bundle for Play Console (same name pattern as the APKs).
           cp build/app/outputs/bundle/release/app-release.aab \
-             "build-outputs/ZAgents-${VERSION}-${GITHUB_REF_NAME}.aab"
+             "build-outputs/MAgents-${VERSION}-${GITHUB_REF_NAME}.aab"
           COUNT=$(ls build-outputs/*.apk build-outputs/*.aab | wc -l)
           if [ "$COUNT" -lt 5 ]; then
             echo "::error::Expected 5 artifacts (4 APKs: universal + 3 ABI splits, plus 1 AAB), got $COUNT."

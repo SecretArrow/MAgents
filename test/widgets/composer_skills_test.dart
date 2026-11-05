@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/services/settings_repository.dart';
-import 'package:zagents/services/skill_registry.dart';
-import 'package:zagents/ui/widgets/composer.dart';
+import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/services/settings_repository.dart';
+import 'package:magents/services/skill_registry.dart';
+import 'package:magents/ui/widgets/composer.dart';
 
 import '../support/test_doubles.dart';
 

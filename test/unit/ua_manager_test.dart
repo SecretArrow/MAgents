@@ -3,9 +3,9 @@ import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/models/user_agent.dart';
-import 'package:zagents/services/user_agent_manager.dart';
+import 'package:magents/di.dart';
+import 'package:magents/models/user_agent.dart';
+import 'package:magents/services/user_agent_manager.dart';
 
 import '../../test/support/test_doubles.dart';
 

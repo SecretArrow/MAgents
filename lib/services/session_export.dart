@@ -13,7 +13,7 @@ const Uuid _uuid = Uuid();
 ///
 /// Export format:
 /// ```json
-/// { "app": "ZAgents", "format": 1, "exportedAt": "...",
+/// { "app": "MAgents", "format": 1, "exportedAt": "...",
 ///   "sessions": [ { "id","title","updatedAt","messages":[…] } ] }
 /// ```
 class SessionExporter {
@@ -65,7 +65,7 @@ class SessionExporter {
       // v1.34.0: pretty-printing every session is pure CPU — off-isolate.
       await _maybeIsolate(
         () => const JsonEncoder.withIndent('  ').convert(<String, dynamic>{
-          'app': 'ZAgents',
+          'app': 'MAgents',
           'format': 1,
           'exportedAt': DateTime.now().toIso8601String(),
           'sessions': sessions,
@@ -83,7 +83,7 @@ class SessionExporter {
     // v1.34.0: whole-file decode off the UI isolate.
     final Object? decoded = await _maybeIsolate(() => jsonDecode(raw));
     if (decoded is! Map || decoded['sessions'] is! List) {
-      throw const FormatException('Not a ZAgents sessions export file');
+      throw const FormatException('Not a MAgents sessions export file');
     }
     var imported = 0;
     for (final Object? rawSession in decoded['sessions'] as List<Object?>) {
@@ -121,7 +121,7 @@ class SessionExporter {
       ..writeln('# ${summary.title}')
       ..writeln()
       ..writeln(
-        '> Exported from ZAgents on '
+        '> Exported from MAgents on '
         '${DateTime.now().toIso8601String().substring(0, 19)} · '
         '${messages.length} messages',
       )

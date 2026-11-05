@@ -5,7 +5,7 @@ import '../theme.dart';
 
 /// App version shown on the About screen. Kept in sync with pubspec.yaml at
 /// every release bump (the release pipeline's quality gate reads pubspec).
-const String kAppVersion = '1.49.8';
+const String kAppVersion = '1.50.0';
 
 /// Dedicated About screen (v1.41.5): a tidy, structured presentation of the
 /// app identity — version, creator, capabilities and the honest disclaimer —
@@ -54,7 +54,7 @@ class AboutScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       const Text(
-                        'ZAgents',
+                        'MAgents',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w800,

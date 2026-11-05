@@ -50,7 +50,7 @@ class UpdateCheckResult {
 }
 
 /// File-name markers that identify per-ABI split APKs
-/// (`ZAgents-<ver>-arm64-v8a.apk` and friends). A `.apk` asset whose
+/// (`MAgents-<ver>-arm64-v8a.apk` and friends). A `.apk` asset whose
 /// lowercased name contains none of these is the universal build.
 const List<String> _abiSplitMarkers = <String>[
   'arm64-v8a',
@@ -153,7 +153,7 @@ int _comparePrerelease(String a, String b) {
   return left.length.compareTo(right.length);
 }
 
-/// Checks GitHub Releases for a newer ZAgents build — the in-app update
+/// Checks GitHub Releases for a newer MAgents build — the in-app update
 /// checker for the sideloaded-APK distribution channel.
 ///
 /// Queries `https://api.github.com/repos/<repo>/releases/latest` and
@@ -172,14 +172,14 @@ class UpdateChecker {
   final http.Client _client;
 
   /// Repo whose releases are checked by default.
-  static const String defaultRepo = 'SecretArrow/ZAgents';
+  static const String defaultRepo = 'SecretArrow/MAgents';
 
   /// Hard cap for the request; a hung captive portal must not block the
   /// caller for long.
   static const Duration requestTimeout = Duration(seconds: 10);
 
   /// User-Agent that identifies the app to the GitHub API.
-  static const String userAgent = 'ZAgents-UpdateChecker';
+  static const String userAgent = 'MAgents-UpdateChecker';
 
   Uri get _apiUrl =>
       Uri.parse('https://api.github.com/repos/$repo/releases/latest');

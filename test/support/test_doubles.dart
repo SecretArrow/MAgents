@@ -4,19 +4,19 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/app_lock_service.dart';
-import 'package:zagents/services/background_service.dart';
-import 'package:zagents/services/backup_service.dart';
-import 'package:zagents/services/browser_automation.dart';
-import 'package:zagents/services/chat_store.dart';
-import 'package:zagents/services/context_repository.dart';
-import 'package:zagents/services/ip_guard.dart';
-import 'package:zagents/services/js_runtime.dart';
-import 'package:zagents/services/llm_client.dart';
-import 'package:zagents/services/prompt_repository.dart';
-import 'package:zagents/services/settings_repository.dart';
+import 'package:magents/di.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/app_lock_service.dart';
+import 'package:magents/services/background_service.dart';
+import 'package:magents/services/backup_service.dart';
+import 'package:magents/services/browser_automation.dart';
+import 'package:magents/services/chat_store.dart';
+import 'package:magents/services/context_repository.dart';
+import 'package:magents/services/ip_guard.dart';
+import 'package:magents/services/js_runtime.dart';
+import 'package:magents/services/llm_client.dart';
+import 'package:magents/services/prompt_repository.dart';
+import 'package:magents/services/settings_repository.dart';
 
 /// Minimal valid 1x1 PNG used as scripted screenshot bytes.
 const String tinyPngBase64 =

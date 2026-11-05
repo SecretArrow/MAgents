@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/browser_automation.dart';
-import 'package:zagents/services/browser_context_registry.dart';
-import 'package:zagents/services/browser_session_isolation.dart';
+import 'package:magents/services/browser_automation.dart';
+import 'package:magents/services/browser_context_registry.dart';
+import 'package:magents/services/browser_session_isolation.dart';
 
 /// Controllable clock: registry rows get deterministic createdAt /
 /// lastUsedAt stamps, so LRU ordering never depends on wall time.

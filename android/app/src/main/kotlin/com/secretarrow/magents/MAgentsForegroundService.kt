@@ -1,4 +1,4 @@
-package com.secretarrow.zagents
+package com.secretarrow.magents
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -28,27 +28,27 @@ import android.os.PowerManager
  *  - ACTION_UPDATE : replace the notification text (current agent step).
  *  - ACTION_STOP   : release everything and stop the service.
  */
-class ZAgentsForegroundService : Service() {
+class MAgentsForegroundService : Service() {
 
     companion object {
-        const val ACTION_START = "com.secretarrow.zagents.action.START"
-        const val ACTION_UPDATE = "com.secretarrow.zagents.action.UPDATE"
-        const val ACTION_STOP = "com.secretarrow.zagents.action.STOP"
+        const val ACTION_START = "com.secretarrow.magents.action.START"
+        const val ACTION_UPDATE = "com.secretarrow.magents.action.UPDATE"
+        const val ACTION_STOP = "com.secretarrow.magents.action.STOP"
         // v1.42.0: per-chat running notifications — one notification per
         // ACTIVE chat, tap opens exactly that conversation.
-        const val ACTION_START_SESSION = "com.secretarrow.zagents.action.START_SESSION"
-        const val ACTION_UPDATE_SESSION = "com.secretarrow.zagents.action.UPDATE_SESSION"
-        const val ACTION_STOP_SESSION = "com.secretarrow.zagents.action.STOP_SESSION"
+        const val ACTION_START_SESSION = "com.secretarrow.magents.action.START_SESSION"
+        const val ACTION_UPDATE_SESSION = "com.secretarrow.magents.action.UPDATE_SESSION"
+        const val ACTION_STOP_SESSION = "com.secretarrow.magents.action.STOP_SESSION"
         const val EXTRA_TITLE = "title"
         const val EXTRA_TEXT = "text"
         const val EXTRA_SESSION_ID = "sessionId"
 
-        const val CHANNEL_ID = "zagents_agent"
+        const val CHANNEL_ID = "magents_agent"
         const val NOTIFICATION_ID = 20251012
         // Base for per-session notification ids: distinct from the service
         // notification (20251012) and the done-notification (2001).
         private const val SESSION_NOTIF_BASE = 20251101
-        private const val WAKELOCK_TAG = "ZAgents::agentLoop"
+        private const val WAKELOCK_TAG = "MAgents::agentLoop"
     }
 
     private var wakeLock: PowerManager.WakeLock? = null

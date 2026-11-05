@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/ui/widgets/paged_list.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/ui/widgets/paged_list.dart';
 
 Widget _host(Widget child) => MaterialApp(
   localizationsDelegates: const <LocalizationsDelegate<Object>>[

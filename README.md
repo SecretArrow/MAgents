@@ -1,9 +1,9 @@
-# ZAgents
+# MAgents
 
-![CI](https://github.com/SecretArrow/ZAgents/actions/workflows/ci.yml/badge.svg)
-![Release](https://github.com/SecretArrow/ZAgents/actions/workflows/release.yml/badge.svg)
+![CI](https://github.com/SecretArrow/MAgents/actions/workflows/ci.yml/badge.svg)
+![Release](https://github.com/SecretArrow/MAgents/actions/workflows/release.yml/badge.svg)
 
-**ZAgents** adalah aplikasi Android (Flutter) bergaya **agent mode chat.z.ai** —
+**MAgents** adalah aplikasi Android (Flutter) bergaya **agent mode chat.z.ai** —
 chat AI dengan kemampuan **otomasi browser tersemat** (buka halaman, klik, ketik,
 scroll, screenshot) dan **kelola file**, mendukung **custom provider**
 OpenAI-compatible: **OpenRouter, InferHub, Z.AI, OpenAI, DeepSeek, Groq, dan lainnya**.
@@ -248,7 +248,7 @@ OpenAI-compatible: **OpenRouter, InferHub, Z.AI, OpenAI, DeepSeek, Groq, dan lai
   kembali berlabel per tugas untuk dirangkum agent. Tombol Stop langsung
   menghentikan seluruh fan.
   2. **Dialog konfirmasi keluar**: tombol back di layar utama kini
-  menanyakan "Keluar dari ZAgents?" (Ya/Tidak) — tekanan back tidak
+  menanyakan "Keluar dari MAgents?" (Ya/Tidak) — tekanan back tidak
   lagi menghentikan tugas agent yang sedang berjalan tanpa sengaja.
   3. **Keandalan latar belakang**: tile baru di Setelan ("Keandalan
   latar belakang") meminta pengecualian optimisasi baterai Android
@@ -273,7 +273,7 @@ OpenAI-compatible: **OpenRouter, InferHub, Z.AI, OpenAI, DeepSeek, Groq, dan lai
   2. **Folder chat di file manager perangkat**: File Manager kini punya
   tombol **ekspor folder chat** — seluruh ruang kerja chat (data.json,
   uploads, state modul, file buatan agent) tersalin ke
-  **`Download/ZAgents/<judul-chat>/`** lewat MediaStore (Android 10+,
+  **`Download/MAgents/<judul-chat>/`** lewat MediaStore (Android 10+,
   tanpa izin apa pun; versi lama: di-zip lalu dibagikan). Ekspor ulang
   menggantikan salinan lama. Selain itu modul yang menulis file dengan
   path relatif (`zagents.fs.writeFile('data.json', …)`) kini benar-benar
@@ -586,7 +586,7 @@ OpenAI-compatible: **OpenRouter, InferHub, Z.AI, OpenAI, DeepSeek, Groq, dan lai
   satu ping GitHub Releases saat startup (bisa dimatikan di Settings → Help & About) +
   banner "Pembaruan tersedia" di atas chat dengan tombol salin tautan rilis; tersedia
   juga tombol "Periksa sekarang" dengan status versi terkini. (3) **Build AAB** —
-  release CI kini menghasilkan 5 artefak: 4 APK split + `ZAgents-<versi>.aab`
+  release CI kini menghasilkan 5 artefak: 4 APK split + `MAgents-<versi>.aab`
   (tanda tangan kunci sama, diverifikasi `jarsigner`, menolak sertifikat debug) — siap
   untuk Google Play Console. (4) **Optimasi lampiran gambar** — file chooser tetap satu,
   tapi gambar kini melewati pipeline validasi magic-byte, gate 20 MB, downscale sisi
@@ -923,7 +923,7 @@ OpenAI-compatible: **OpenRouter, InferHub, Z.AI, OpenAI, DeepSeek, Groq, dan lai
 
 ## 📲 Cara pakai
 
-1. Unduh APK terbaru dari halaman [**Releases**](https://github.com/SecretArrow/ZAgents/releases).
+1. Unduh APK terbaru dari halaman [**Releases**](https://github.com/SecretArrow/MAgents/releases).
 2. Instal (izinkan instal dari sumber tidak dikenal bila diminta).
 3. Buka **Settings → AI provider** → layar **Providers** → ketuk provider
    (mis. OpenRouter / **InferHub**) → isi **API key** → ketuk **Save API key**

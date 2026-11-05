@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/ui/theme.dart';
-import 'package:zagents/ui/widgets/message_bubble.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/ui/theme.dart';
+import 'package:magents/ui/widgets/message_bubble.dart';
 
 void main() {
   Widget wrap(Widget child) => ProviderScope(

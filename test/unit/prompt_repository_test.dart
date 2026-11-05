@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/prompt_repository.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/prompt_repository.dart';
 
 void main() {
   late Directory tempDir;

@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 /// (v1.29.0) — "every chat has its own folder".
 ///
 /// * Android 10+ (API 29): the folder tree is copied into
-///   `Download/ZAgents/<folder>/` through MediaStore — no storage
+///   `Download/MAgents/<folder>/` through MediaStore — no storage
 ///   permission needed, visible in any Files app under Downloads.
 /// * Older Android: the whole workspace is zipped (into the app's
 ///   exports dir) and handed to the share sheet, so the user can save
@@ -179,7 +179,7 @@ sealed class DeviceExportResult {
   int get fileCount;
 }
 
-/// Copied into `Download/ZAgents/<folder>/` via MediaStore.
+/// Copied into `Download/MAgents/<folder>/` via MediaStore.
 class MediaStoreExport extends DeviceExportResult {
   const MediaStoreExport({required this.fileCount, required this.folder});
   @override

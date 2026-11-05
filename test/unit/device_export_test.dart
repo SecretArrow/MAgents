@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/device_export.dart';
+import 'package:magents/services/device_export.dart';
 
 void main() {
   late Directory tempDir;

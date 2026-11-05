@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/chat_store.dart';
-import 'package:zagents/services/session_export.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/chat_store.dart';
+import 'package:magents/services/session_export.dart';
 
 void main() {
   late Directory tempDir;
@@ -47,7 +47,7 @@ void main() {
     final Object? decoded = jsonDecode(await file.readAsString());
     expect(decoded, isA<Map>());
     final Map<String, dynamic> map = decoded! as Map<String, dynamic>;
-    expect(map['app'], 'ZAgents');
+    expect(map['app'], 'MAgents');
     expect((map['sessions'] as List).length, 2);
   });
 
@@ -97,7 +97,7 @@ void main() {
     final File file = File('${tempDir.path}/mixed.json');
     await file.writeAsString(
       jsonEncode(<String, dynamic>{
-        'app': 'ZAgents',
+        'app': 'MAgents',
         'format': 1,
         'sessions': <dynamic>[
           <String, dynamic>{

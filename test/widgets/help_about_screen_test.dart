@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/ui/screens/about_screen.dart';
-import 'package:zagents/ui/screens/help_screen.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/ui/screens/about_screen.dart';
+import 'package:magents/ui/screens/help_screen.dart';
 
 Widget _wrap(Widget child, {Locale locale = const Locale('en')}) => MaterialApp(
   locale: locale,
@@ -78,7 +78,7 @@ void main() {
     ) async {
       await tester.pumpWidget(_wrap(const AboutScreen()));
       await tester.pumpAndSettle();
-      expect(find.text('ZAgents'), findsOneWidget);
+      expect(find.text('MAgents'), findsOneWidget);
       expect(find.byKey(const Key('about-version')), findsOneWidget);
       expect(find.byKey(const Key('about-creator')), findsOneWidget);
       // The version constant stays in sync with the release.

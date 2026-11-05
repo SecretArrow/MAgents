@@ -4,10 +4,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zagents/main.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/llm_client.dart';
+import 'package:magents/main.dart';
+import 'package:magents/di.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/llm_client.dart';
 
 import '../../test/support/test_doubles.dart';
 
@@ -34,7 +34,7 @@ void main() {
       settings: settings ?? AppSettings(apiKey: 'test-key'),
       writeScreenshots: false,
     ),
-    child: const ZAgentsApp(),
+    child: const MAgentsApp(),
   );
 
   testWidgets('send message -> streamed answer appears', (
@@ -192,7 +192,7 @@ void main() {
           // time out. The in-memory store answers immediately.
           chatStoreProvider.overrideWithValue(MemoryChatStore()),
         ],
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pump();
@@ -254,7 +254,7 @@ void main() {
         child: Builder(
           builder: (BuildContext context) {
             container = ProviderScope.containerOf(context);
-            return const ZAgentsApp();
+            return const MAgentsApp();
           },
         ),
       ),
@@ -313,7 +313,7 @@ void main() {
         child: Builder(
           builder: (BuildContext context) {
             container = ProviderScope.containerOf(context);
-            return const ZAgentsApp();
+            return const MAgentsApp();
           },
         ),
       ),
@@ -357,7 +357,7 @@ void main() {
           ),
           chatListProvider.overrideWith((Ref ref) async => <ChatSummary>[]),
         ],
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pump();
@@ -392,7 +392,7 @@ void main() {
           ),
           chatListProvider.overrideWith((Ref ref) async => <ChatSummary>[]),
         ],
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pump();

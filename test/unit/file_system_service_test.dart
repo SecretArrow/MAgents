@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/file_system_service.dart';
+import 'package:magents/services/file_system_service.dart';
 
 void main() {
   late Directory tempDir;

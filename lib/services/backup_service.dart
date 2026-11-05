@@ -118,7 +118,7 @@ class BackupService {
     }
 
     final Map<String, dynamic> payload = <String, dynamic>{
-      'app': 'ZAgents',
+      'app': 'MAgents',
       'format': 1,
       'createdAt': DateTime.now().toIso8601String(),
       'settings': settings.toJson(),
@@ -185,7 +185,7 @@ class BackupService {
     }
     final List<String> lines = await File(filePath).readAsLines();
     if (lines.isEmpty || lines.first.trim() != magic) {
-      throw const BackupFormatException('Not a ZAgents backup file');
+      throw const BackupFormatException('Not a MAgents backup file');
     }
     final Uint8List body = _decodeBody(lines.length > 1 ? lines[1] : '');
     if (body.length < _saltBytes + _ivBytes + 32) {
@@ -233,8 +233,8 @@ class BackupService {
       throw const BackupFormatException('Backup payload is corrupted');
     }
     final Map<String, dynamic> payloadMap = decoded.payload!;
-    if (payloadMap['app'] != 'ZAgents') {
-      throw const BackupFormatException('Not a ZAgents backup file');
+    if (payloadMap['app'] != 'MAgents' && payloadMap['app'] != 'ZAgents') {
+      throw const BackupFormatException('Not a MAgents backup file');
     }
 
     // Replace settings.

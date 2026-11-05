@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:zagents/services/llm_client.dart';
+import 'package:magents/services/llm_client.dart';
 
 const LlmConfig _config = LlmConfig(
   baseUrl: 'https://provider.test/v1',

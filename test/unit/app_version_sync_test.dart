@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/ui/screens/about_screen.dart';
+import 'package:magents/ui/screens/about_screen.dart';
 
 /// Drift guard (v1.49.7): the About-screen version constant is the single
 /// source the update checker reads (`di.dart` passes it as currentVersion)

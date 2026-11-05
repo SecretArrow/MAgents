@@ -55,6 +55,6 @@ network, files, the device or the agent.
 ## Try it
 
 1. Install the ZIP: **Settings → Modules → Install module**.
-2. `/qr https://github.com/SecretArrow/ZAgents`
+2. `/qr https://github.com/SecretArrow/MAgents`
 3. `/qr wifi CoffeeShop | latte4life`
 4. Scan the screen with any phone camera.

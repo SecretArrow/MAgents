@@ -24,7 +24,7 @@ class EmptyState extends ConsumerWidget {
             const BrandMark(size: 64),
             const SizedBox(height: 16),
             const Text(
-              'ZAgents',
+              'MAgents',
               style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),

@@ -5,7 +5,7 @@ import 'package:archive/archive.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:zagents/services/npm_service.dart';
+import 'package:magents/services/npm_service.dart';
 
 /// Builds a gzip tarball like the npm registry serves: a `package/` root
 /// containing the given files.

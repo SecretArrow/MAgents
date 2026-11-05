@@ -5,8 +5,8 @@ import 'package:archive/archive.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:zagents/services/module_registry.dart';
-import 'package:zagents/ui/screens/modules_screen.dart';
+import 'package:magents/services/module_registry.dart';
+import 'package:magents/ui/screens/modules_screen.dart';
 
 /// Guard for the module development kit that lives in the repository:
 ///

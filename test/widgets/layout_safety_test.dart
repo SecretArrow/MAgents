@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/main.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/model_catalog.dart';
+import 'package:magents/di.dart';
+import 'package:magents/main.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/model_catalog.dart';
 
 import '../support/test_doubles.dart';
 import 'model_picker_test.dart' show ScriptedModelCatalog;
@@ -37,7 +37,7 @@ void main() {
       ),
       ...extra,
     ],
-    child: const ZAgentsApp(),
+    child: const MAgentsApp(),
   );
 
   void useSmallScreen(

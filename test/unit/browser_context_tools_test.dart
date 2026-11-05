@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/browser_automation.dart';
-import 'package:zagents/services/browser_session_isolation.dart';
-import 'package:zagents/services/tool_executor.dart';
+import 'package:magents/services/browser_automation.dart';
+import 'package:magents/services/browser_session_isolation.dart';
+import 'package:magents/services/tool_executor.dart';
 
 import '../support/test_doubles.dart';
 

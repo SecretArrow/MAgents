@@ -3,11 +3,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/main.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/file_system_service.dart';
-import 'package:zagents/services/session_sandbox.dart';
+import 'package:magents/di.dart';
+import 'package:magents/main.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/file_system_service.dart';
+import 'package:magents/services/session_sandbox.dart';
 
 import '../../test/support/test_doubles.dart';
 
@@ -122,7 +122,7 @@ void main() {
             (Ref ref) async => const <ChatSummary>[],
           ),
         ],
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pump();
@@ -396,7 +396,7 @@ void main() {
           // NO activeSessionIdProvider override: the fresh app has no
           // open chat, so there is no per-chat workspace to browse.
         ],
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pump();

@@ -518,8 +518,8 @@ class LlmClient {
     ..headers['Content-Type'] = 'application/json'
     ..headers['Accept'] = 'text/event-stream'
     // OpenRouter attribution (ignored by other providers).
-    ..headers['HTTP-Referer'] = 'https://github.com/SecretArrow/ZAgents'
-    ..headers['X-Title'] = 'ZAgents'
+    ..headers['HTTP-Referer'] = 'https://github.com/SecretArrow/MAgents'
+    ..headers['X-Title'] = 'MAgents'
     ..headers.addAll(
       _extraRequestHeaders?.call(url) ?? const <String, String>{},
     )

@@ -56,7 +56,7 @@ String makePluginsBuilderPrompt(String request) {
             'plugin should do, then stop and wait for their next message.)'
       : '```\n${request.trim()}\n```';
   return '''
-# Task: build a NEW ZAgents chat module (plugin) from this chat
+# Task: build a NEW MAgents chat module (plugin) from this chat
 
 The user typed a `/make_plugins` command. Build a complete, installable
 module in THIS chat's workspace and stage it for the user to install.

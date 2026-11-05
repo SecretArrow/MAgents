@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/agentrouter_client.dart';
-import 'package:zagents/services/llm_client.dart';
-import 'package:zagents/services/model_catalog.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/agentrouter_client.dart';
+import 'package:magents/services/llm_client.dart';
+import 'package:magents/services/model_catalog.dart';
 
 const LlmConfig _agentConfig = LlmConfig(
   baseUrl: 'https://agentrouter.org/v1',

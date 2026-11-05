@@ -6,7 +6,7 @@ import 'package:archive/archive.dart' as ar;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:zagents/services/skill_registry.dart';
+import 'package:magents/services/skill_registry.dart';
 
 /// v1.38.0: the Skills system — REAL install pipeline (archive decoding,
 /// zip-slip protection, caps, atomic staging), secret-safe config and

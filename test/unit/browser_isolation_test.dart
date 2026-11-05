@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/browser_automation.dart';
-import 'package:zagents/services/browser_session_isolation.dart';
+import 'package:magents/services/browser_automation.dart';
+import 'package:magents/services/browser_session_isolation.dart';
 
 /// Cookie jar test double recording every mutation so tests can assert exactly
 /// when the shared jar is cleared and whose cookies are restored.

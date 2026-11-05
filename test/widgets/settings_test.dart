@@ -3,17 +3,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/main.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/ui/screens/preset_editor_screen.dart';
-import 'package:zagents/models/user_agent.dart';
-import 'package:zagents/ui/screens/providers_screen.dart';
-import 'package:zagents/ui/screens/skills_screen.dart';
-import 'package:zagents/services/background_service.dart';
-import 'package:zagents/ui/screens/about_screen.dart';
-import 'package:zagents/ui/screens/help_screen.dart';
-import 'package:zagents/ui/screens/settings_screen.dart';
+import 'package:magents/di.dart';
+import 'package:magents/main.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/ui/screens/preset_editor_screen.dart';
+import 'package:magents/models/user_agent.dart';
+import 'package:magents/ui/screens/providers_screen.dart';
+import 'package:magents/ui/screens/skills_screen.dart';
+import 'package:magents/services/background_service.dart';
+import 'package:magents/ui/screens/about_screen.dart';
+import 'package:magents/ui/screens/help_screen.dart';
+import 'package:magents/ui/screens/settings_screen.dart';
 
 import '../../test/support/test_doubles.dart';
 
@@ -50,7 +50,7 @@ void main() {
         child: Builder(
           builder: (BuildContext context) {
             container = ProviderScope.containerOf(context);
-            return const ZAgentsApp();
+            return const MAgentsApp();
           },
         ),
       ),

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/agent_controller.dart'
+import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/agent_controller.dart'
     show ChatController, ChatState;
-import 'package:zagents/ui/theme.dart';
-import 'package:zagents/ui/widgets/chat_body.dart';
+import 'package:magents/ui/theme.dart';
+import 'package:magents/ui/widgets/chat_body.dart';
 
 /// v1.48.1 — the user must SEE plan progress: [ChatBody] auto-reveals the
 /// live Plan panel the moment a run's FIRST `todo_write` lands (todos

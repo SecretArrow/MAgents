@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/make_plugins.dart';
+import 'package:magents/services/make_plugins.dart';
 
 void main() {
   group('matchMakePluginsCommand', () {
@@ -44,7 +44,7 @@ void main() {
     test('embeds the user request verbatim', () {
       final String brief = makePluginsBuilderPrompt('a pomodoro plugin');
       expect(brief, contains('a pomodoro plugin'));
-      expect(brief, startsWith('# Task: build a NEW ZAgents chat module'));
+      expect(brief, startsWith('# Task: build a NEW MAgents chat module'));
     });
 
     test('empty request instructs the model to ask first, not build', () {
@@ -89,7 +89,7 @@ void main() {
 
     test('expandMakePluginsPrompt expands only the command message', () {
       final String expanded = expandMakePluginsPrompt('/make_plugin counter');
-      expect(expanded, contains('# Task: build a NEW ZAgents chat module'));
+      expect(expanded, contains('# Task: build a NEW MAgents chat module'));
       expect(expanded, contains('counter'));
       expect(expanded.contains('/make_plugin counter'), isFalse);
     });

@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:zagents/services/speech_service.dart';
+import 'package:magents/services/speech_service.dart';
 
 /// Minimal fake implementing the public `SpeechToText` interface that
 /// [SpeechService] uses. Everything is driven synchronously by the tests —

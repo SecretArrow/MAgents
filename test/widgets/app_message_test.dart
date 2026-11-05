@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/ui/widgets/app_message.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/ui/widgets/app_message.dart';
 
 /// Widget tests for the v1.49.6 centered message dialog that replaced both
 /// SnackBars (v1.48-) and the bottom overlay toast (v1.49.5): appears at

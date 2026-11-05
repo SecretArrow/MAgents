@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.secretarrow.zagents"
+    namespace = "com.secretarrow.magents"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.secretarrow.zagents"
+        applicationId = "com.secretarrow.magents"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
@@ -52,12 +52,12 @@ android {
         release {
             val releaseSigningConfigured = !System.getenv("KEYSTORE_PATH").isNullOrBlank() &&
                 !(System.getenv("KEYSTORE_STORE_PASSWORD") ?: System.getenv("KEYSTORE_PASSWORD")).isNullOrBlank()
-            // The release workflow sets ZAGENTS_REQUIRE_SIGNING=true: publishing a
+            // The release workflow sets MAGENTS_REQUIRE_SIGNING=true: publishing a
             // debug-signed APK is worse than failing the build.
-            val requireSigning = System.getenv("ZAGENTS_REQUIRE_SIGNING") == "true"
+            val requireSigning = System.getenv("MAGENTS_REQUIRE_SIGNING") == "true"
             if (requireSigning && !releaseSigningConfigured) {
                 throw GradleException(
-                    "Release signing is required (ZAGENTS_REQUIRE_SIGNING=true) but " +
+                    "Release signing is required (MAGENTS_REQUIRE_SIGNING=true) but " +
                         "KEYSTORE_PATH / KEYSTORE_STORE_PASSWORD are missing.",
                 )
             }

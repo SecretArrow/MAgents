@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zagents/main.dart';
-import 'package:zagents/ui/screens/home_shell.dart';
+import 'package:magents/main.dart';
+import 'package:magents/ui/screens/home_shell.dart';
 
 import '../support/test_doubles.dart';
 
@@ -26,7 +26,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: <Override>[...testOverrides(dir: tempDir)],
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pumpAndSettle(

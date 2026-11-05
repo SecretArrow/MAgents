@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/services/agent_controller.dart';
-import 'package:zagents/services/module_registry.dart';
-import 'package:zagents/ui/screens/home_shell.dart';
-import 'package:zagents/ui/widgets/module_setup_sheet.dart';
+import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/services/agent_controller.dart';
+import 'package:magents/services/module_registry.dart';
+import 'package:magents/ui/screens/home_shell.dart';
+import 'package:magents/ui/widgets/module_setup_sheet.dart';
 
 import '../support/test_doubles.dart';
 

@@ -4,11 +4,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/main.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/context_repository.dart';
-import 'package:zagents/ui/screens/context_screen.dart';
+import 'package:magents/di.dart';
+import 'package:magents/main.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/context_repository.dart';
+import 'package:magents/ui/screens/context_screen.dart';
 
 import '../../test/support/test_doubles.dart';
 
@@ -34,7 +34,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pump();
@@ -85,7 +85,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pump();
@@ -142,7 +142,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const ZAgentsApp(),
+        child: const MAgentsApp(),
       ),
     );
     await tester.pump();

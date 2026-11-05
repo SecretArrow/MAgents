@@ -4,16 +4,16 @@ import 'package:flutter/services.dart' show MissingPluginException;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:zagents/services/device_shell.dart';
-import 'package:zagents/services/file_system_service.dart';
+import 'package:magents/services/device_shell.dart';
+import 'package:magents/services/file_system_service.dart';
 import 'package:archive/archive.dart';
-import 'package:zagents/services/js_runtime.dart';
-import 'package:zagents/services/module_registry.dart';
-import 'package:zagents/services/module_runtime.dart';
-import 'package:zagents/services/session_sandbox.dart';
-import 'package:zagents/services/npm_service.dart';
-import 'package:zagents/services/tool_executor.dart';
-import 'package:zagents/services/web_fetcher.dart';
+import 'package:magents/services/js_runtime.dart';
+import 'package:magents/services/module_registry.dart';
+import 'package:magents/services/module_runtime.dart';
+import 'package:magents/services/session_sandbox.dart';
+import 'package:magents/services/npm_service.dart';
+import 'package:magents/services/tool_executor.dart';
+import 'package:magents/services/web_fetcher.dart';
 
 import '../support/test_doubles.dart';
 
@@ -460,7 +460,7 @@ void main() {
         expect(result.llmOutput, contains('uploads/locked/hello.txt'));
         expect(
           File('${tempDir.path}/uploads/locked/hello.txt').readAsStringSync(),
-          'Hello from an encrypted zip! ZAgents can decrypt this.\n',
+          'Hello from an encrypted zip! MAgents can decrypt this.\n',
         );
       },
     );

@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/chat_store.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/chat_store.dart';
 
 /// v1.38.1 — SessionBundle round-trip: ONE decode must restore messages,
 /// active modules, the setup-wait flag and the latest plan together.

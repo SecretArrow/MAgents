@@ -39,7 +39,7 @@ class ModuleRemote {
   /// at `samples/<name>/module.json` — the manifest probe powers the
   /// catalog's Update badge without downloading the whole archive.
   static const String repoRawBase =
-      'https://raw.githubusercontent.com/SecretArrow/ZAgents/main';
+      'https://raw.githubusercontent.com/SecretArrow/MAgents/main';
 
   static const int maxUrlLength = 2048;
 

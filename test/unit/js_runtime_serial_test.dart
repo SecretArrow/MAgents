@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/js_runtime.dart';
+import 'package:magents/services/js_runtime.dart';
 
 /// Inner runtime whose runs take a controllable amount of time and record
 /// their lifecycle, so tests can prove parallel calls execute one after

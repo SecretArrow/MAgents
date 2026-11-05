@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/session_sandbox.dart';
+import 'package:magents/services/session_sandbox.dart';
 
 void main() {
   late Directory tempDir;

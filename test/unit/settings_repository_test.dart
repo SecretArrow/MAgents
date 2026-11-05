@@ -4,9 +4,9 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/settings_repository.dart';
+import 'package:magents/di.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/settings_repository.dart';
 
 const String _settingsKey = 'zagents.settings.v1';
 

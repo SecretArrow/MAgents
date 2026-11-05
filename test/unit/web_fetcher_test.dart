@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:zagents/services/web_fetcher.dart';
+import 'package:magents/services/web_fetcher.dart';
 
 http.Client _clientWith({
   int status = 200,

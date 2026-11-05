@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/models/models.dart';
+import 'package:magents/models/models.dart';
 
 void main() {
   group('ProviderPreset', () {

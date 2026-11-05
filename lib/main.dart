@@ -47,7 +47,7 @@ Future<void> main() async {
         appLockPrefsProvider.overrideWithValue(appLockPrefs),
         ipMemoPrefsProvider.overrideWithValue(ipMemoPrefs),
       ],
-      child: const ZAgentsApp(),
+      child: const MAgentsApp(),
     ),
   );
 }
@@ -94,8 +94,8 @@ Widget insetGuardBuilder(BuildContext context, Widget? child) {
   );
 }
 
-class ZAgentsApp extends ConsumerWidget {
-  const ZAgentsApp({super.key});
+class MAgentsApp extends ConsumerWidget {
+  const MAgentsApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -113,7 +113,7 @@ class ZAgentsApp extends ConsumerWidget {
       ThemeModeSetting.system => ThemeMode.system,
     };
     return MaterialApp(
-      title: 'ZAgents',
+      title: 'MAgents',
       debugShowCheckedModeBanner: false,
       builder: insetGuardBuilder,
       theme: buildLightTheme(),

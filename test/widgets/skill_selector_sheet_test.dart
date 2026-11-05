@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/services/settings_repository.dart';
-import 'package:zagents/services/skill_registry.dart';
-import 'package:zagents/ui/screens/skills_screen.dart';
-import 'package:zagents/ui/theme.dart';
-import 'package:zagents/ui/widgets/skill_selector_sheet.dart';
+import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/services/settings_repository.dart';
+import 'package:magents/services/skill_registry.dart';
+import 'package:magents/ui/screens/skills_screen.dart';
+import 'package:magents/ui/theme.dart';
+import 'package:magents/ui/widgets/skill_selector_sheet.dart';
 
 /// v1.49.0 per-chat skill selector sheet: selection round-trip contract of
 /// [SkillSelectorSheet.show] (Apply / Use global default / Clear /

@@ -187,7 +187,7 @@ class ChatDrawer extends ConsumerWidget {
               ),
               child: Row(
                 children: <Widget>[
-                  // Decorative logo — the adjacent 'ZAgents' text carries
+                  // Decorative logo — the adjacent 'MAgents' text carries
                   // the meaning, so drop the empty 'Z' node from the
                   // semantics tree.
                   const ExcludeSemantics(child: BrandMark(size: 36)),
@@ -199,7 +199,7 @@ class ChatDrawer extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         const Text(
-                          'ZAgents',
+                          'MAgents',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

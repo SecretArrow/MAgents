@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/agent_polisher.dart';
-import 'package:zagents/services/llm_client.dart';
+import 'package:magents/services/agent_polisher.dart';
+import 'package:magents/services/llm_client.dart';
 
 import '../support/test_doubles.dart';
 

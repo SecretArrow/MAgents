@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:zagents/services/background_service.dart';
+import 'package:magents/services/background_service.dart';
 
 /// Tests for the Dart side of the background-run hold (foreground service
 /// bridge). The native side is exercised by the e2e suite on the Android
@@ -27,10 +27,10 @@ void main() {
     final BackgroundRunService service = BackgroundRunService();
     expect(service.isActive, isFalse);
 
-    await service.start(title: 'ZAgents agent is running', text: 'Processing…');
+    await service.start(title: 'MAgents agent is running', text: 'Processing…');
     expect(service.isActive, isTrue);
     expect(calls.single.method, 'start');
-    expect(calls.single.arguments['title'], 'ZAgents agent is running');
+    expect(calls.single.arguments['title'], 'MAgents agent is running');
     expect(calls.single.arguments['text'], 'Processing…');
 
     await service.updateStatus('Step 1 · browser_navigate');

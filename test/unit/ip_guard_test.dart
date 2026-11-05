@@ -7,11 +7,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:zagents/di.dart';
-import 'package:zagents/l10n/app_strings.dart';
-import 'package:zagents/models/models.dart';
-import 'package:zagents/services/ip_guard.dart';
-import 'package:zagents/services/settings_repository.dart';
+import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
+import 'package:magents/models/models.dart';
+import 'package:magents/services/ip_guard.dart';
+import 'package:magents/services/settings_repository.dart';
 
 /// Builds a guard whose HTTP probe answers with [status]/[body] and
 /// records the request for endpoint assertions.
