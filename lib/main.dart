@@ -20,6 +20,7 @@ import 'services/reminder_repository.dart';
 import 'services/scheduled_job_repository.dart';
 import 'services/scheduled_job_runner.dart';
 import 'services/scheduled_job_service.dart';
+import 'services/telegram_sender.dart';
 
 import 'services/settings_repository.dart';
 import 'ui/lock_gate.dart';
@@ -87,6 +88,7 @@ Future<void> main() async {
   final ScheduledJobRunner runner = ScheduledJobRunner(
     jobs: ScheduledJobService(jobRepo),
     notifications: BackgroundRunService(),
+    telegram: TelegramSender(),
     configStore: PrefsTelegramConfigStore(
       secrets: const FlutterSecretBox(),
       prefs: appLockPrefs,
