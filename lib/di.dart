@@ -137,7 +137,9 @@ final telegramConfigStoreProvider = Provider<TelegramConfigStore>((ref) {
 final scheduledJobRunnerProvider = Provider<ScheduledJobRunner>(
   (ref) => ScheduledJobRunner(
     jobs: ref.watch(scheduledJobServiceProvider),
-    notifications: ref.watch(backgroundRunServiceProvider),
+    notifications: BackgroundRunJobNotifications(
+      ref.watch(backgroundRunServiceProvider),
+    ),
     telegram: ref.watch(telegramSenderProvider),
     configStore: ref.watch(telegramConfigStoreProvider),
     listSessionIds: () async => <String>[
