@@ -25,28 +25,35 @@ void main() {
 
   Future<ProviderContainer> pumpApp(WidgetTester tester) async {
     final ProviderContainer container = ProviderContainer(
-      overrides: testOverrides(
-        dir: tempDir,
-        memories: <MemoryEntry>[
-          MemoryEntry(
-            id: 'm1',
-            text: 'User prefers concise answers',
-            category: MemoryCategory.preference,
-            pinned: true,
-            createdAt: DateTime(2026, 1, 1),
-            updatedAt: DateTime(2026, 1, 1),
-          ),
-        ],
-        goals: <GoalEntry>[
-          GoalEntry(
-            id: 'g1',
-            title: 'Ship MAgents v1.50',
-            progress: 60,
-            createdAt: DateTime(2026, 1, 1),
-            updatedAt: DateTime(2026, 1, 1),
-          ),
-        ],
-      ),
+      overrides: <Override>[
+        ...testOverrides(
+          dir: tempDir,
+          memoriesBySession: <String, List<MemoryEntry>>{
+            'test-session': <MemoryEntry>[
+              MemoryEntry(
+                id: 'm1',
+                text: 'User prefers concise answers',
+                category: MemoryCategory.preference,
+                pinned: true,
+                createdAt: DateTime(2026, 1, 1),
+                updatedAt: DateTime(2026, 1, 1),
+              ),
+            ],
+          },
+          goalsBySession: <String, List<GoalEntry>>{
+            'test-session': <GoalEntry>[
+              GoalEntry(
+                id: 'g1',
+                title: 'Ship MAgents v1.50',
+                progress: 60,
+                createdAt: DateTime(2026, 1, 1),
+                updatedAt: DateTime(2026, 1, 1),
+              ),
+            ],
+          },
+        ),
+        activeSessionIdProvider.overrideWithValue('test-session'),
+      ],
     );
     addTearDown(container.dispose);
     await tester.pumpWidget(

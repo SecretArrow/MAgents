@@ -5,19 +5,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 
 /// Abstraction over the persistent long-term memory storage (v1.50.0).
-/// Follows the [ContextRepository] pattern: synchronous load, async save.
+/// USER CORRECTION (v1.50.1): memory is scoped PER CHAT — every method
+/// takes the owning session id and one chat can never see another
+/// chat's entries (same isolation philosophy as files/browser/modules).
 abstract class MemoryRepository {
-  List<MemoryEntry> load();
-  Future<void> save(List<MemoryEntry> entries);
+  List<MemoryEntry> load(String sessionId);
+  Future<void> save(String sessionId, List<MemoryEntry> entries);
 }
 
-/// SharedPreferences-backed store used in production. Uses the NEW
-/// `magents.` key prefix; legacy `zagents.` keys are never touched.
+/// SharedPreferences-backed store used in production. One key PER CHAT:
+/// `magents.memory.v1.<sessionId>`. The short-lived global key from the
+/// first v1.50.0 build is intentionally abandoned (never migrated into
+/// any chat, so no data can leak across chats).
 class PrefsMemoryRepository implements MemoryRepository {
   PrefsMemoryRepository(this._prefs);
 
   final SharedPreferences _prefs;
-  static const String key = 'magents.memory.v1';
+
+  static String keyFor(String sessionId) => 'magents.memory.v1.$sessionId';
 
   static Future<PrefsMemoryRepository> create() async {
     final prefs = await SharedPreferences.getInstance();
@@ -25,8 +30,9 @@ class PrefsMemoryRepository implements MemoryRepository {
   }
 
   @override
-  List<MemoryEntry> load() {
-    final raw = _prefs.getString(key);
+  List<MemoryEntry> load(String sessionId) {
+    if (sessionId.isEmpty) return const <MemoryEntry>[];
+    final raw = _prefs.getString(keyFor(sessionId));
     if (raw == null || raw.isEmpty) return const <MemoryEntry>[];
     try {
       final decoded = jsonDecode(raw);
@@ -43,9 +49,10 @@ class PrefsMemoryRepository implements MemoryRepository {
   }
 
   @override
-  Future<void> save(List<MemoryEntry> entries) async {
+  Future<void> save(String sessionId, List<MemoryEntry> entries) async {
+    if (sessionId.isEmpty) return;
     await _prefs.setString(
-      key,
+      keyFor(sessionId),
       jsonEncode(<Map<String, dynamic>>[
         for (final MemoryEntry e in entries) e.toJson(),
       ]),
@@ -53,18 +60,19 @@ class PrefsMemoryRepository implements MemoryRepository {
   }
 }
 
-/// In-memory repository for unit and widget tests.
+/// In-memory repository for unit and widget tests (per-session map).
 class InMemoryMemoryRepository implements MemoryRepository {
-  InMemoryMemoryRepository([List<MemoryEntry>? initial])
-    : _entries = initial ?? const <MemoryEntry>[];
+  InMemoryMemoryRepository([Map<String, List<MemoryEntry>>? initial])
+    : _bySession = initial ?? <String, List<MemoryEntry>>{};
 
-  List<MemoryEntry> _entries;
-
-  @override
-  List<MemoryEntry> load() => List<MemoryEntry>.of(_entries);
+  final Map<String, List<MemoryEntry>> _bySession;
 
   @override
-  Future<void> save(List<MemoryEntry> entries) async {
-    _entries = List<MemoryEntry>.of(entries);
+  List<MemoryEntry> load(String sessionId) =>
+      List<MemoryEntry>.of(_bySession[sessionId] ?? const <MemoryEntry>[]);
+
+  @override
+  Future<void> save(String sessionId, List<MemoryEntry> entries) async {
+    _bySession[sessionId] = List<MemoryEntry>.of(entries);
   }
 }

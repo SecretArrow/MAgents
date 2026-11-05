@@ -25,7 +25,7 @@ Guidelines:
 - When the user attaches files, images travel as vision parts and text files are inlined; reference attachments by name.
 - Skills (v1.38.0): installed skills EXTEND your capabilities and persist across ALL chats (install once, use everywhere). List them with skill_list; read a skill's full manual with skill_info before first use and follow it exactly; run its scripts with skill_run. Install new skills from natural requests OR CLI-style commands — when the user says "install the X skill" or pastes something like "npx skills add owner/repo/path/to/skill", call skill_install with the same source (owner/repo[/path][@branch]); for the Web3 wallet workflows use the skills bundled with this app (builtin:web3-wallet-basics, builtin:binance-agentic-wallet). After installing: report what was installed, list its required config fields, and verify the install by reading skill_info. If a skill needs config values (API keys, wallet settings), collect them from the user and store them with skill_config — values are saved on-device and never echoed into the conversation. Skill scripts run in the embedded JS runtime with network access (fetch), file access and npm packages; they are NOT a full Node.js or terminal — native binaries, arbitrary CLI tools and non-JS scripts are unsupported, and you must say so honestly instead of pretending. Wallet skills (SKILL.md declares wallet: true) are value-moving: the app itself requires the user to approve every skill_run on one, so never claim a transaction happened unless the run returned a success result.
 - Security & money (CRITICAL): NEVER ask for a seed phrase, recovery phrase or private key in chat, and never store one in plain conversation — if a skill needs secrets, they go through skill_config secret fields. Use only the skill's official authentication flow (API keys, OAuth links, wallet-connect URLs the user opens themselves). Login or wallet connection is NEVER permission to transact: before ANY irreversible action — sending assets, swapping, selling/minting an NFT, token approvals, changing spending limits — call request_confirmation with a COMPLETE summary (network, asset, amount, destination address, estimated fee, what the user gets) and proceed ONLY when the user approves. Denials are final: do not retry the same action. If a capability is unsupported by the environment or the skill fails, report exactly what happened — never claim an action succeeded without evidence from a tool result.
-- Long-term memory (v1.50.0): you have a persistent memory shared across ALL chats. Save durable facts, preferences and instructions with memory_save (do not save secrets or one-off details), recall them with memory_recall/memory_list, and remove stale ones with memory_forget. Relevant pinned/relevant memories and the user's active goals are already included in the system prompt when they exist.
+- Long-term memory (v1.50.0): you have a persistent memory scoped to THIS chat only (per-chat isolation: other chats have their own separate memories and you can never access them). Save durable facts, preferences and instructions for THIS conversation with memory_save (do not save secrets or one-off details), recall them with memory_recall/memory_list, and remove stale ones with memory_forget. Relevant pinned/relevant memories of THIS chat and THIS chat's active goals are already included in the system prompt when they exist.
 - Goals (v1.50.0): track the user's goals with goal_create/goal_list/goal_update/goal_complete and keep their progress honest (only mark progress you verified).
 - When you have enough information, stop calling tools and write the final answer in Markdown.
 - Always answer in the same language the user writes in.
@@ -651,7 +651,7 @@ List<Map<String, dynamic>> buildAgentTools({
   ),
   _fn(
     'memory_save',
-    'Save a durable fact, preference, person note, project note or standing instruction into long-term memory (shared across all chats). Near-duplicates are ignored. Do NOT save secrets, passwords or one-off task details.',
+    'Save a durable fact, preference, person note, project note or standing instruction into THIS chat\'s long-term memory (per-chat: invisible to other chats). Near-duplicates are ignored. Do NOT save secrets, passwords or one-off task details.',
     <String, dynamic>{
       'text': <String, dynamic>{
         'type': 'string',
@@ -718,7 +718,7 @@ List<Map<String, dynamic>> buildAgentTools({
   ),
   _fn(
     'goal_create',
-    'Create a user goal (title, optional detail, progress 0-100, optional due date YYYY-MM-DD). Goals persist across chats and active goals appear in the system prompt.',
+    'Create a goal for THIS chat (title, optional detail, progress 0-100, optional due date YYYY-MM-DD). Goals are per-chat and this chat\'s active goals appear in the system prompt.',
     <String, dynamic>{
       'title': <String, dynamic>{'type': 'string', 'description': 'Goal title'},
       'detail': <String, dynamic>{

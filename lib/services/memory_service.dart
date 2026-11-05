@@ -1,7 +1,8 @@
 import '../models/models.dart';
 import 'memory_repository.dart';
 
-/// Long-term memory logic (v1.50.0): add/edit/remove with near-duplicate
+/// Long-term memory logic (v1.50.0; PER-CHAT scope since v1.50.1 per
+/// the user's correction — data never mixes between chats): add/edit/remove with near-duplicate
 /// dedupe, token-overlap relevance search (pinned first), a hard entry
 /// cap, and a bounded prompt summary. Pure logic over [MemoryRepository]
 /// so it is fully unit-testable.
@@ -14,7 +15,7 @@ class MemoryService {
   static const int promptMaxEntries = 8;
   static const int promptMaxChars = 1500;
 
-  List<MemoryEntry> list() => _repo.load();
+  List<MemoryEntry> list(String sessionId) => _repo.load(sessionId);
 
   /// Normalizes text for dedupe/search: lowercase, collapsed whitespace.
   static String normalize(String text) =>
@@ -30,13 +31,14 @@ class MemoryService {
   /// near-duplicate (same normalized text) already exists, or null when
   /// the text is empty or the store is at [maxEntries].
   Future<MemoryEntry?> add(
+    String sessionId,
     String text, {
     MemoryCategory category = MemoryCategory.fact,
     bool pinned = false,
   }) async {
     final String cleaned = MemoryEntry.clampText(text);
     if (cleaned.isEmpty) return null;
-    final List<MemoryEntry> entries = _repo.load();
+    final List<MemoryEntry> entries = _repo.load(sessionId);
     final String norm = normalize(cleaned);
     for (final MemoryEntry e in entries) {
       if (normalize(e.text) == norm) return e;
@@ -51,17 +53,18 @@ class MemoryService {
       createdAt: now,
       updatedAt: now,
     );
-    await _repo.save(<MemoryEntry>[...entries, entry]);
+    await _repo.save(sessionId, <MemoryEntry>[...entries, entry]);
     return entry;
   }
 
   Future<MemoryEntry?> update(
+    String sessionId,
     String id, {
     String? text,
     MemoryCategory? category,
     bool? pinned,
   }) async {
-    final List<MemoryEntry> entries = _repo.load();
+    final List<MemoryEntry> entries = _repo.load(sessionId);
     MemoryEntry? updated;
     final List<MemoryEntry> next = <MemoryEntry>[
       for (final MemoryEntry e in entries)
@@ -76,17 +79,17 @@ class MemoryService {
           e,
     ];
     if (updated == null) return null;
-    await _repo.save(next);
+    await _repo.save(sessionId, next);
     return updated;
   }
 
-  Future<bool> forget(String id) async {
-    final List<MemoryEntry> entries = _repo.load();
+  Future<bool> forget(String sessionId, String id) async {
+    final List<MemoryEntry> entries = _repo.load(sessionId);
     final List<MemoryEntry> next = entries
         .where((MemoryEntry e) => e.id != id)
         .toList();
     if (next.length == entries.length) return false;
-    await _repo.save(next);
+    await _repo.save(sessionId, next);
     return true;
   }
 
@@ -101,8 +104,8 @@ class MemoryService {
 
   /// Search: pinned first, then relevance, then most recently updated.
   /// An empty query returns pinned + most recent entries.
-  List<MemoryEntry> search(String query, {int limit = 20}) {
-    final List<MemoryEntry> entries = _repo.load();
+  List<MemoryEntry> search(String sessionId, String query, {int limit = 20}) {
+    final List<MemoryEntry> entries = _repo.load(sessionId);
     final Set<String> q = tokenize(query);
     final List<MemoryEntry> ranked = entries.toList();
     ranked.sort((MemoryEntry a, MemoryEntry b) {
@@ -122,12 +125,12 @@ class MemoryService {
   /// Bounded block for the system prompt: pinned entries plus the top
   /// search hits for [lastUserText]. Empty string when there is nothing
   /// worth injecting — callers then change NOTHING (legacy behavior).
-  String promptSummary(String lastUserText) {
-    final List<MemoryEntry> all = _repo.load();
+  String promptSummary(String sessionId, String lastUserText) {
+    final List<MemoryEntry> all = _repo.load(sessionId);
     if (all.isEmpty) return '';
     final List<MemoryEntry> picked = <MemoryEntry>[];
     final Set<String> seen = <String>{};
-    for (final MemoryEntry e in search(lastUserText, limit: promptMaxEntries)) {
+    for (final MemoryEntry e in search(sessionId, lastUserText, limit: promptMaxEntries)) {
       if (seen.add(e.id)) picked.add(e);
     }
     final StringBuffer out = StringBuffer();

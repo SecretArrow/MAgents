@@ -288,40 +288,6 @@ class ChatDrawer extends ConsumerWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: ListTile(
-                key: const Key('drawer-memory'),
-                dense: true,
-                leading: const Icon(Icons.psychology_rounded, size: 20),
-                title: const Text('Memory'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const MemoryScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: ListTile(
-                key: const Key('drawer-goals'),
-                dense: true,
-                leading: const Icon(Icons.flag_rounded, size: 20),
-                title: const Text('Goals'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).push(
-                    MaterialPageRoute<void>(
-                      builder: (_) => const GoalsScreen(),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 6),
               child: Text(
                 strings.historyTitle.toUpperCase(),
@@ -519,6 +485,42 @@ class ChatDrawer extends ConsumerWidget {
                       Navigator.of(context).push(
                         MaterialPageRoute<void>(
                           builder: (_) => const StatsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    key: const Key('drawer-memory'),
+                    tooltip: 'Memory',
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    icon: const Icon(Icons.psychology_rounded, size: 20),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const MemoryScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  IconButton(
+                    key: const Key('drawer-goals'),
+                    tooltip: 'Goals',
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints(
+                      minWidth: 48,
+                      minHeight: 48,
+                    ),
+                    icon: const Icon(Icons.flag_rounded, size: 20),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const GoalsScreen(),
                         ),
                       );
                     },

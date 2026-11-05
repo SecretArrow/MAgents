@@ -235,21 +235,21 @@ class ToolExecutor {
         case 'skill_run':
           return await _skillRun(args, sessionId);
         case 'memory_save':
-          return await _memorySave(args);
+          return await _memorySave(args, sessionId);
         case 'memory_recall':
-          return _memoryRecall(args);
+          return _memoryRecall(args, sessionId);
         case 'memory_list':
-          return _memoryList(args);
+          return _memoryList(args, sessionId);
         case 'memory_forget':
-          return await _memoryForget(args);
+          return await _memoryForget(args, sessionId);
         case 'goal_create':
-          return await _goalCreate(args);
+          return await _goalCreate(args, sessionId);
         case 'goal_list':
-          return _goalList(args);
+          return _goalList(args, sessionId);
         case 'goal_update':
-          return await _goalUpdate(args);
+          return await _goalUpdate(args, sessionId);
         case 'goal_complete':
-          return await _goalComplete(args);
+          return await _goalComplete(args, sessionId);
         case 'device_status':
           return await _deviceStatus();
         default:
@@ -354,7 +354,7 @@ class ToolExecutor {
   MemoryCategory _memoryCategory(Object? raw) =>
       memoryCategoryFromName(raw?.toString());
 
-  Future<ToolResult> _memorySave(Map<String, dynamic> args) async {
+  Future<ToolResult> _memorySave(Map<String, dynamic> args, String? sessionId) async {
     final MemoryService? svc = memory;
     if (svc == null) {
       return const ToolResult(
@@ -363,6 +363,7 @@ class ToolExecutor {
       );
     }
     final MemoryEntry? entry = await svc.add(
+      sessionId ?? '',
       args['text']?.toString() ?? '',
       category: _memoryCategory(args['category']),
       pinned: args['pinned'] == true,
@@ -384,7 +385,7 @@ class ToolExecutor {
     );
   }
 
-  ToolResult _memoryRecall(Map<String, dynamic> args) {
+  ToolResult _memoryRecall(Map<String, dynamic> args, String? sessionId) {
     final MemoryService? svc = memory;
     if (svc == null) {
       return const ToolResult(
@@ -393,7 +394,7 @@ class ToolExecutor {
       );
     }
     final String query = args['query']?.toString() ?? '';
-    final List<MemoryEntry> hits = svc.search(query, limit: 10);
+    final List<MemoryEntry> hits = svc.search(sessionId ?? '', query, limit: 10);
     if (hits.isEmpty) {
       return const ToolResult(ok: true, llmOutput: 'No memories found.');
     }
@@ -408,7 +409,7 @@ class ToolExecutor {
     );
   }
 
-  ToolResult _memoryList(Map<String, dynamic> args) {
+  ToolResult _memoryList(Map<String, dynamic> args, String? sessionId) {
     final MemoryService? svc = memory;
     if (svc == null) {
       return const ToolResult(
@@ -416,7 +417,7 @@ class ToolExecutor {
         llmOutput: 'memory_list is unavailable in this build.',
       );
     }
-    List<MemoryEntry> entries = svc.search('', limit: 50);
+    List<MemoryEntry> entries = svc.search(sessionId ?? '', '', limit: 50);
     final Object? cat = args['category'];
     if (cat != null && cat.toString().isNotEmpty) {
       final MemoryCategory wanted = _memoryCategory(cat);
@@ -436,7 +437,7 @@ class ToolExecutor {
     );
   }
 
-  Future<ToolResult> _memoryForget(Map<String, dynamic> args) async {
+  Future<ToolResult> _memoryForget(Map<String, dynamic> args, String? sessionId) async {
     final MemoryService? svc = memory;
     if (svc == null) {
       return const ToolResult(
@@ -445,7 +446,7 @@ class ToolExecutor {
       );
     }
     final String id = args['id']?.toString() ?? '';
-    final bool removed = id.isNotEmpty && await svc.forget(id);
+    final bool removed = id.isNotEmpty && await svc.forget(sessionId ?? '', id);
     return ToolResult(
       ok: removed,
       llmOutput: removed
@@ -454,7 +455,7 @@ class ToolExecutor {
     );
   }
 
-  Future<ToolResult> _goalCreate(Map<String, dynamic> args) async {
+  Future<ToolResult> _goalCreate(Map<String, dynamic> args, String? sessionId) async {
     final GoalService? svc = goals;
     if (svc == null) {
       return const ToolResult(
@@ -463,6 +464,7 @@ class ToolExecutor {
       );
     }
     final GoalEntry? goal = await svc.create(
+      sessionId ?? '',
       args['title']?.toString() ?? '',
       detail: args['detail']?.toString() ?? '',
       dueDate: DateTime.tryParse(args['due_date']?.toString() ?? ''),
@@ -483,7 +485,7 @@ class ToolExecutor {
     );
   }
 
-  ToolResult _goalList(Map<String, dynamic> args) {
+  ToolResult _goalList(Map<String, dynamic> args, String? sessionId) {
     final GoalService? svc = goals;
     if (svc == null) {
       return const ToolResult(
@@ -491,7 +493,7 @@ class ToolExecutor {
         llmOutput: 'goal_list is unavailable in this build.',
       );
     }
-    List<GoalEntry> entries = svc.list();
+    List<GoalEntry> entries = svc.list(sessionId ?? '');
     if (args['all'] != true) {
       final String statusName =
           args['status']?.toString() ?? GoalStatus.active.name;
@@ -515,7 +517,7 @@ class ToolExecutor {
     );
   }
 
-  Future<ToolResult> _goalUpdate(Map<String, dynamic> args) async {
+  Future<ToolResult> _goalUpdate(Map<String, dynamic> args, String? sessionId) async {
     final GoalService? svc = goals;
     if (svc == null) {
       return const ToolResult(
@@ -537,6 +539,7 @@ class ToolExecutor {
     }
     final Object? rawProgress = args['progress'];
     final GoalEntry? goal = await svc.update(
+      sessionId ?? '',
       id,
       title: args['title']?.toString(),
       detail: args['detail']?.toString(),
@@ -561,7 +564,7 @@ class ToolExecutor {
     );
   }
 
-  Future<ToolResult> _goalComplete(Map<String, dynamic> args) async {
+  Future<ToolResult> _goalComplete(Map<String, dynamic> args, String? sessionId) async {
     final GoalService? svc = goals;
     if (svc == null) {
       return const ToolResult(
@@ -570,7 +573,7 @@ class ToolExecutor {
       );
     }
     final String id = args['id']?.toString() ?? '';
-    final GoalEntry? goal = id.isEmpty ? null : await svc.complete(id);
+    final GoalEntry? goal = id.isEmpty ? null : await svc.complete(sessionId ?? '', id);
     if (goal == null) {
       return ToolResult(
         ok: false,

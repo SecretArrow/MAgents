@@ -2778,7 +2778,7 @@ class ChatController extends Notifier<ChatState> {
       }
       final String memorySummary = ref
           .read(memoryServiceProvider)
-          .promptSummary(lastUser);
+          .promptSummary(run.sessionId, lastUser);
       if (memorySummary.isNotEmpty) {
         if (content.isNotEmpty) content.writeln();
         content
@@ -2792,7 +2792,7 @@ class ChatController extends Notifier<ChatState> {
       // Memory store failure must never block a chat request.
     }
     try {
-      final String goalSummary = ref.read(goalServiceProvider).promptSummary();
+      final String goalSummary = ref.read(goalServiceProvider).promptSummary(run.sessionId);
       if (goalSummary.isNotEmpty) {
         if (content.isNotEmpty) content.writeln();
         content

@@ -19,8 +19,10 @@ class GoalsScreen extends ConsumerStatefulWidget {
 }
 
 class _GoalsScreenState extends ConsumerState<GoalsScreen> {
+  String get _sessionId => ref.read(activeSessionIdProvider) ?? '';
+
   Future<void> _refresh() async {
-    ref.invalidate(goalListProvider);
+    ref.invalidate(goalListProvider(_sessionId));
     if (mounted) setState(() {});
   }
 
@@ -45,7 +47,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
       ),
     );
     if (confirmed != true) return;
-    await ref.read(goalServiceProvider).remove(goal.id);
+    await ref.read(goalServiceProvider).remove(_sessionId, goal.id);
     await _refresh();
   }
 
@@ -159,6 +161,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
     final service = ref.read(goalServiceProvider);
     if (existing == null) {
       await service.create(
+        _sessionId,
         title.text,
         detail: detail.text,
         dueDate: dueDate,
@@ -166,6 +169,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
       );
     } else {
       await service.update(
+        _sessionId,
         existing.id,
         title: title.text,
         detail: detail.text,
@@ -181,8 +185,41 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String? sessionId = ref.watch(activeSessionIdProvider);
+    if (sessionId == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Goals')),
+        body: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(
+                Icons.chat_bubble_outline_rounded,
+                size: 48,
+                color: context.zMuted,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Open a chat first',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Goals are kept per chat: each chat tracks only its own '
+                'goals, so data never mixes between chats. Open a chat '
+                'to see its goals.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: context.zMuted, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     final List<GoalEntry> goals =
-        ref.watch(goalListProvider).value ?? const <GoalEntry>[];
+        ref.watch(goalListProvider(sessionId)).value ?? const <GoalEntry>[];
     final DateTime now = DateTime.now();
     return Scaffold(
       appBar: AppBar(title: const Text('Goals')),
@@ -202,8 +239,8 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                   Icon(Icons.flag_rounded, size: 48, color: context.zMuted),
                   const SizedBox(height: 16),
                   Text(
-                    'No goals yet. Active goals are shared with the agent '
-                    'so it can help you reach them.',
+                    'No goals yet for THIS chat. Goals are per chat — the '
+                    'agent only sees the goals of this conversation.',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: context.zMuted),
                   ),
@@ -265,7 +302,7 @@ class _GoalsScreenState extends ConsumerState<GoalsScreen> {
                           if (action == 'complete') {
                             await ref
                                 .read(goalServiceProvider)
-                                .complete(goal.id);
+                                .complete(_sessionId, goal.id);
                             await _refresh();
                           }
                         },

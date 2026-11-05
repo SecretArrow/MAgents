@@ -646,8 +646,8 @@ List<Override> testOverrides({
   bool writeScreenshots = true,
   List<ContextEntry>? contexts,
   List<PromptEntry>? prompts,
-  List<MemoryEntry>? memories,
-  List<GoalEntry>? goals,
+  Map<String, List<MemoryEntry>>? memoriesBySession,
+  Map<String, List<GoalEntry>>? goalsBySession,
   ScriptedJsRuntime? js,
 }) => <Override>[
   settingsRepositoryProvider.overrideWithValue(
@@ -658,9 +658,11 @@ List<Override> testOverrides({
   ),
   promptRepositoryProvider.overrideWithValue(MemoryPromptRepository(prompts)),
   memoryRepositoryProvider.overrideWithValue(
-    InMemoryMemoryRepository(memories),
+    InMemoryMemoryRepository(memoriesBySession),
   ),
-  goalRepositoryProvider.overrideWithValue(InMemoryGoalRepository(goals)),
+  goalRepositoryProvider.overrideWithValue(
+    InMemoryGoalRepository(goalsBySession),
+  ),
   documentsDirProvider.overrideWithValue(() async => dir),
   if (llm != null) llmClientProvider.overrideWithValue(llm),
   // Widget tests run in an async test zone: awaiting the real method

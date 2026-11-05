@@ -10,14 +10,15 @@ class GoalService {
 
   static const int promptMaxGoals = 5;
 
-  List<GoalEntry> list() => _repo.load();
+  List<GoalEntry> list(String sessionId) => _repo.load(sessionId);
 
-  List<GoalEntry> active() => _repo
-      .load()
+  List<GoalEntry> active(String sessionId) => _repo
+      .load(sessionId)
       .where((GoalEntry g) => g.status == GoalStatus.active)
       .toList();
 
   Future<GoalEntry?> create(
+    String sessionId,
     String title, {
     String detail = '',
     DateTime? dueDate,
@@ -35,11 +36,12 @@ class GoalService {
       createdAt: now,
       updatedAt: now,
     );
-    await _repo.save(<GoalEntry>[..._repo.load(), goal]);
+    await _repo.save(sessionId, <GoalEntry>[..._repo.load(sessionId), goal]);
     return goal;
   }
 
   Future<GoalEntry?> update(
+    String sessionId,
     String id, {
     String? title,
     String? detail,
@@ -50,7 +52,7 @@ class GoalService {
   }) async {
     GoalEntry? updated;
     final List<GoalEntry> next = <GoalEntry>[
-      for (final GoalEntry g in _repo.load())
+      for (final GoalEntry g in _repo.load(sessionId))
         if (g.id == id)
           updated = g.copyWith(
             title: title?.trim(),
@@ -73,29 +75,29 @@ class GoalService {
       final int idx = next.indexWhere((GoalEntry g) => g.id == id);
       if (idx >= 0) next[idx] = updated;
     }
-    await _repo.save(next);
+    await _repo.save(sessionId, next);
     return updated;
   }
 
-  Future<GoalEntry?> complete(String id) =>
-      update(id, status: GoalStatus.done, progress: 100);
+  Future<GoalEntry?> complete(String sessionId, String id) =>
+      update(sessionId, id, status: GoalStatus.done, progress: 100);
 
-  Future<bool> remove(String id) async {
-    final List<GoalEntry> entries = _repo.load();
+  Future<bool> remove(String sessionId, String id) async {
+    final List<GoalEntry> entries = _repo.load(sessionId);
     final List<GoalEntry> next = entries
         .where((GoalEntry g) => g.id != id)
         .toList();
     if (next.length == entries.length) return false;
-    await _repo.save(next);
+    await _repo.save(sessionId, next);
     return true;
   }
 
   /// Bounded block for the system prompt: up to [promptMaxGoals] active
   /// goals, overdue first, then nearest due date. Empty when no active
   /// goals exist — callers then change NOTHING (legacy behavior).
-  String promptSummary({DateTime? now}) {
+  String promptSummary(String sessionId, {DateTime? now}) {
     final DateTime at = now ?? DateTime.now();
-    final List<GoalEntry> goals = active();
+    final List<GoalEntry> goals = active(sessionId);
     if (goals.isEmpty) return '';
     goals.sort((GoalEntry a, GoalEntry b) {
       final bool ao = a.isOverdue(at);

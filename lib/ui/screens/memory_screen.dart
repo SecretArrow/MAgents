@@ -19,8 +19,10 @@ class MemoryScreen extends ConsumerStatefulWidget {
 }
 
 class _MemoryScreenState extends ConsumerState<MemoryScreen> {
+  String get _sessionId => ref.read(activeSessionIdProvider) ?? '';
+
   Future<void> _refresh() async {
-    ref.invalidate(memoryListProvider);
+    ref.invalidate(memoryListProvider(_sessionId));
     if (mounted) setState(() {});
   }
 
@@ -45,7 +47,7 @@ class _MemoryScreenState extends ConsumerState<MemoryScreen> {
       ),
     );
     if (confirmed != true) return;
-    await ref.read(memoryServiceProvider).forget(entry.id);
+    await ref.read(memoryServiceProvider).forget(_sessionId, entry.id);
     await _refresh();
   }
 
@@ -122,9 +124,15 @@ class _MemoryScreenState extends ConsumerState<MemoryScreen> {
     if (saved != true) return;
     final service = ref.read(memoryServiceProvider);
     if (existing == null) {
-      await service.add(text.text, category: category, pinned: pinned);
+      await service.add(
+        _sessionId,
+        text.text,
+        category: category,
+        pinned: pinned,
+      );
     } else {
       await service.update(
+        _sessionId,
         existing.id,
         text: text.text,
         category: category,
@@ -137,8 +145,42 @@ class _MemoryScreenState extends ConsumerState<MemoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final String? sessionId = ref.watch(activeSessionIdProvider);
+    if (sessionId == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Memory')),
+        body: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Icon(
+                Icons.chat_bubble_outline_rounded,
+                size: 48,
+                color: context.zMuted,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Open a chat first',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Memory is kept per chat: each chat remembers only its '
+                'own facts, so data never mixes between chats. Open a '
+                'chat to see its memory.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: context.zMuted, fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
     final List<MemoryEntry> entries =
-        ref.watch(memoryListProvider).value ?? const <MemoryEntry>[];
+        ref.watch(memoryListProvider(sessionId)).value ??
+        const <MemoryEntry>[];
     return Scaffold(
       appBar: AppBar(title: const Text('Memory')),
       floatingActionButton: FloatingActionButton.extended(
@@ -161,8 +203,8 @@ class _MemoryScreenState extends ConsumerState<MemoryScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'No memories yet. Memories saved here are recalled by '
-                    'the agent in every chat.',
+                    'No memories yet for THIS chat. Memories are per chat — '
+                    'they are only recalled inside this conversation.',
                     textAlign: TextAlign.center,
                     style: TextStyle(color: context.zMuted),
                   ),
@@ -179,6 +221,15 @@ class _MemoryScreenState extends ConsumerState<MemoryScreen> {
                   e.text.toLowerCase().contains(q) ||
                   e.category.name.contains(q),
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 96),
+              header: const <Widget>[
+                Padding(
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    'This memory belongs to THIS chat only.',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+              ],
               itemBuilder: (BuildContext context, MemoryEntry entry) =>
                   Container(
                     margin: const EdgeInsets.only(bottom: 8),
@@ -212,7 +263,11 @@ class _MemoryScreenState extends ConsumerState<MemoryScreen> {
                             if (action == 'pin') {
                               ref
                                   .read(memoryServiceProvider)
-                                  .update(entry.id, pinned: !entry.pinned)
+                                  .update(
+                                    _sessionId,
+                                    entry.id,
+                                    pinned: !entry.pinned,
+                                  )
                                   .then((_) => _refresh());
                             }
                           },

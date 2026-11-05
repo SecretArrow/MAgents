@@ -5,18 +5,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 
 /// Abstraction over the persistent goals storage (v1.50.0).
-/// Same shape as the memory/context repositories.
+/// USER CORRECTION (v1.50.1): goals are scoped PER CHAT, exactly like
+/// memory — one key per session, no cross-chat visibility.
 abstract class GoalRepository {
-  List<GoalEntry> load();
-  Future<void> save(List<GoalEntry> entries);
+  List<GoalEntry> load(String sessionId);
+  Future<void> save(String sessionId, List<GoalEntry> entries);
 }
 
-/// SharedPreferences-backed store used in production (new `magents.` key).
+/// SharedPreferences-backed store used in production (per-chat key).
 class PrefsGoalRepository implements GoalRepository {
   PrefsGoalRepository(this._prefs);
 
   final SharedPreferences _prefs;
-  static const String key = 'magents.goals.v1';
+
+  static String keyFor(String sessionId) => 'magents.goals.v1.$sessionId';
 
   static Future<PrefsGoalRepository> create() async {
     final prefs = await SharedPreferences.getInstance();
@@ -24,8 +26,9 @@ class PrefsGoalRepository implements GoalRepository {
   }
 
   @override
-  List<GoalEntry> load() {
-    final raw = _prefs.getString(key);
+  List<GoalEntry> load(String sessionId) {
+    if (sessionId.isEmpty) return const <GoalEntry>[];
+    final raw = _prefs.getString(keyFor(sessionId));
     if (raw == null || raw.isEmpty) return const <GoalEntry>[];
     try {
       final decoded = jsonDecode(raw);
@@ -42,9 +45,10 @@ class PrefsGoalRepository implements GoalRepository {
   }
 
   @override
-  Future<void> save(List<GoalEntry> entries) async {
+  Future<void> save(String sessionId, List<GoalEntry> entries) async {
+    if (sessionId.isEmpty) return;
     await _prefs.setString(
-      key,
+      keyFor(sessionId),
       jsonEncode(<Map<String, dynamic>>[
         for (final GoalEntry e in entries) e.toJson(),
       ]),
@@ -52,18 +56,19 @@ class PrefsGoalRepository implements GoalRepository {
   }
 }
 
-/// In-memory repository for unit and widget tests.
+/// In-memory repository for unit and widget tests (per-session map).
 class InMemoryGoalRepository implements GoalRepository {
-  InMemoryGoalRepository([List<GoalEntry>? initial])
-    : _entries = initial ?? const <GoalEntry>[];
+  InMemoryGoalRepository([Map<String, List<GoalEntry>>? initial])
+    : _bySession = initial ?? <String, List<GoalEntry>>{};
 
-  List<GoalEntry> _entries;
-
-  @override
-  List<GoalEntry> load() => List<GoalEntry>.of(_entries);
+  final Map<String, List<GoalEntry>> _bySession;
 
   @override
-  Future<void> save(List<GoalEntry> entries) async {
-    _entries = List<GoalEntry>.of(entries);
+  List<GoalEntry> load(String sessionId) =>
+      List<GoalEntry>.of(_bySession[sessionId] ?? const <GoalEntry>[]);
+
+  @override
+  Future<void> save(String sessionId, List<GoalEntry> entries) async {
+    _bySession[sessionId] = List<GoalEntry>.of(entries);
   }
 }

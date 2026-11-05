@@ -30,51 +30,84 @@ MemoryEntry _mem(
 }
 
 void main() {
-  group('PrefsMemoryRepository', () {
-    test('save then load roundtrips entries', () async {
+  group('PrefsMemoryRepository (per chat)', () {
+    test('save then load roundtrips entries for that chat', () async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       final prefs = await SharedPreferences.getInstance();
       final PrefsMemoryRepository repo = PrefsMemoryRepository(prefs);
-      await repo.save(<MemoryEntry>[
+      await repo.save('chat-a', <MemoryEntry>[
         _mem('User likes tea', pinned: true),
         _mem('Project is MAgents', category: MemoryCategory.project),
       ]);
-      final List<MemoryEntry> loaded = repo.load();
+      final List<MemoryEntry> loaded = repo.load('chat-a');
       expect(loaded, hasLength(2));
       expect(loaded.first.text, 'User likes tea');
       expect(loaded.first.pinned, isTrue);
       expect(loaded.last.category, MemoryCategory.project);
     });
 
+    test('ISOLATION: entries saved in chat A are invisible in chat B', () async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final prefs = await SharedPreferences.getInstance();
+      final PrefsMemoryRepository repo = PrefsMemoryRepository(prefs);
+      await repo.save('chat-a', <MemoryEntry>[_mem('secret of chat A')]);
+      expect(repo.load('chat-a'), hasLength(1));
+      expect(repo.load('chat-b'), isEmpty);
+      expect(prefs.getString('magents.memory.v1.chat-b'), isNull);
+    });
+
     test('corrupted store degrades to an empty list', () async {
       SharedPreferences.setMockInitialValues(<String, Object>{
-        'magents.memory.v1': '{broken json',
+        'magents.memory.v1.chat-a': '{broken json',
       });
       final prefs = await SharedPreferences.getInstance();
-      expect(PrefsMemoryRepository(prefs).load(), isEmpty);
+      expect(PrefsMemoryRepository(prefs).load('chat-a'), isEmpty);
     });
   });
 
-  group('MemoryService', () {
+  group('MemoryService (per chat)', () {
     test('add dedupes near-identical text (normalized)', () async {
       final MemoryService svc = MemoryService(InMemoryMemoryRepository());
-      final MemoryEntry? a = await svc.add('User  likes   Tea');
-      final MemoryEntry? b = await svc.add('user likes tea');
+      final MemoryEntry? a = await svc.add('chat-a', 'User  likes   Tea');
+      final MemoryEntry? b = await svc.add('chat-a', 'user likes tea');
       expect(a, isNotNull);
       expect(b, isNotNull);
       expect(b!.id, a!.id);
-      expect(svc.list(), hasLength(1));
+      expect(svc.list('chat-a'), hasLength(1));
+    });
+
+    test('ISOLATION: memory saved in chat A is not visible in chat B', () async {
+      final MemoryService svc = MemoryService(InMemoryMemoryRepository());
+      await svc.add('chat-a', 'chat A loves blue oceans', pinned: true);
+      await svc.add('chat-b', 'chat B loves green forests');
+      expect(svc.list('chat-a').single.text, contains('blue oceans'));
+      expect(svc.list('chat-b').single.text, contains('green forests'));
+      expect(
+        svc.search('chat-b', 'blue oceans'),
+        isNot(contains(predicate<MemoryEntry>((e) => e.text.contains('blue')))),
+      );
+      expect(svc.promptSummary('chat-b', 'blue oceans'), isNot(contains('blue')));
+      expect(
+        svc.promptSummary('chat-a', 'blue oceans'),
+        contains('blue oceans'),
+      );
+      // Forgetting in B must not touch A.
+      final String bId = svc.list('chat-b').single.id;
+      expect(await svc.forget('chat-b', bId), isTrue);
+      expect(svc.list('chat-a'), hasLength(1));
     });
 
     test('search ranks pinned first and by token overlap', () async {
       final MemoryService svc = MemoryService(
-        InMemoryMemoryRepository(<MemoryEntry>[
-          _mem('banana bread recipe'),
-          _mem('user favorite color is blue', pinned: true),
-          _mem('blue ocean photo'),
-        ]),
+        InMemoryMemoryRepository(<String, List<MemoryEntry>>{
+          'chat-a': <MemoryEntry>[
+            _mem('banana bread recipe'),
+            _mem('user favorite color is blue', pinned: true),
+            _mem('blue ocean photo'),
+          ],
+        }),
       );
-      final List<MemoryEntry> hits = svc.search('blue');
+      final List<MemoryEntry> hits = svc.search('chat-a', 'blue');
       expect(hits.first.pinned, isTrue);
       expect(hits.map((MemoryEntry e) => e.text), contains('blue ocean photo'));
       expect(
@@ -85,46 +118,49 @@ void main() {
 
     test('promptSummary is empty without memories and bounded with', () async {
       final MemoryService svc = MemoryService(InMemoryMemoryRepository());
-      expect(svc.promptSummary('anything'), isEmpty);
-      await svc.add('User prefers dark mode', pinned: true);
-      await svc.add('User works on MAgents project');
-      final String summary = svc.promptSummary('tell me about MAgents');
+      expect(svc.promptSummary('chat-a', 'anything'), isEmpty);
+      await svc.add('chat-a', 'User prefers dark mode', pinned: true);
+      await svc.add('chat-a', 'User works on MAgents project');
+      final String summary = svc.promptSummary('chat-a', 'tell me about MAgents');
       expect(summary, contains('dark mode'));
       expect(summary.length, lessThanOrEqualTo(MemoryService.promptMaxChars));
     });
 
     test('update and forget work', () async {
       final MemoryService svc = MemoryService(InMemoryMemoryRepository());
-      final MemoryEntry? e = await svc.add('draft note');
+      final MemoryEntry? e = await svc.add('chat-a', 'draft note');
       expect(e, isNotNull);
-      final MemoryEntry? updated = await svc.update(e!.id, pinned: true);
+      final MemoryEntry? updated = await svc.update('chat-a', e!.id, pinned: true);
       expect(updated!.pinned, isTrue);
-      expect(await svc.forget(e.id), isTrue);
-      expect(svc.list(), isEmpty);
-      expect(await svc.forget(e.id), isFalse);
+      expect(await svc.forget('chat-a', e.id), isTrue);
+      expect(svc.list('chat-a'), isEmpty);
+      expect(await svc.forget('chat-a', e.id), isFalse);
     });
   });
 
-  group('PrefsGoalRepository + GoalService', () {
+  group('PrefsGoalRepository + GoalService (per chat)', () {
     test('save then load roundtrips; corrupted degrades empty', () async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
       final prefs = await SharedPreferences.getInstance();
       final PrefsGoalRepository repo = PrefsGoalRepository(prefs);
       final GoalService svc = GoalService(repo);
       final GoalEntry? g = await svc.create(
+        'chat-a',
         'Ship v1.50',
         progress: 40,
         dueDate: DateTime(2026, 11, 10),
       );
       expect(g, isNotNull);
-      expect(repo.load().single.title, 'Ship v1.50');
-      expect(repo.load().single.progress, 40);
+      expect(repo.load('chat-a').single.title, 'Ship v1.50');
+      expect(repo.load('chat-a').single.progress, 40);
+      // ISOLATION: nothing leaks into chat B.
+      expect(repo.load('chat-b'), isEmpty);
 
       SharedPreferences.setMockInitialValues(<String, Object>{
-        'magents.goals.v1': 'not json!!',
+        'magents.goals.v1.chat-a': 'not json!!',
       });
       final prefs2 = await SharedPreferences.getInstance();
-      expect(PrefsGoalRepository(prefs2).load(), isEmpty);
+      expect(PrefsGoalRepository(prefs2).load('chat-a'), isEmpty);
     });
 
     test('overdue and dueSoon logic', () {
@@ -138,18 +174,13 @@ void main() {
             createdAt: now,
             updatedAt: now,
           );
-      expect(
-        make(now.subtract(const Duration(hours: 1))).isOverdue(now),
-        isTrue,
-      );
+      expect(make(now.subtract(const Duration(hours: 1))).isOverdue(now), isTrue);
       expect(make(now.add(const Duration(hours: 24))).isDueSoon(now), isTrue);
       expect(make(now.add(const Duration(hours: 24))).isOverdue(now), isFalse);
       expect(make(now.add(const Duration(days: 7))).isDueSoon(now), isFalse);
       expect(
-        make(
-          now.subtract(const Duration(days: 1)),
-          status: GoalStatus.done,
-        ).isOverdue(now),
+        make(now.subtract(const Duration(days: 1)), status: GoalStatus.done)
+            .isOverdue(now),
         isFalse,
       );
       expect(make(null).isOverdue(now), isFalse);
@@ -157,23 +188,24 @@ void main() {
 
     test('complete pins progress at 100; summary only lists active', () async {
       final GoalService svc = GoalService(InMemoryGoalRepository());
-      expect(svc.promptSummary(), isEmpty);
-      final GoalEntry? g = await svc.create('Learn Dart', progress: 10);
-      expect(svc.promptSummary(), contains('Learn Dart'));
-      final GoalEntry? done = await svc.complete(g!.id);
+      expect(svc.promptSummary('chat-a'), isEmpty);
+      final GoalEntry? g = await svc.create('chat-a', 'Learn Dart', progress: 10);
+      expect(svc.promptSummary('chat-a'), contains('Learn Dart'));
+      expect(svc.promptSummary('chat-b'), isEmpty);
+      final GoalEntry? done = await svc.complete('chat-a', g!.id);
       expect(done!.status, GoalStatus.done);
       expect(done.progress, 100);
-      expect(svc.promptSummary(), isEmpty);
+      expect(svc.promptSummary('chat-a'), isEmpty);
     });
 
     test('progress is clamped to 0..100', () async {
       final GoalService svc = GoalService(InMemoryGoalRepository());
-      final GoalEntry? g = await svc.create('Clamp me', progress: 250);
+      final GoalEntry? g = await svc.create('chat-a', 'Clamp me', progress: 250);
       expect(g!.progress, 100);
     });
   });
 
-  group('tool defs + executor (memory & goals)', () {
+  group('tool defs + executor (memory & goals, per chat)', () {
     test('all eight new tools are defined exactly once', () {
       final List<String> names = <String>[
         for (final Map<String, dynamic> tool in buildAgentTools())
@@ -189,15 +221,11 @@ void main() {
         'goal_update',
         'goal_complete',
       ]) {
-        expect(
-          names.where((String n) => n == name),
-          hasLength(1),
-          reason: name,
-        );
+        expect(names.where((String n) => n == name), hasLength(1), reason: name);
       }
     });
 
-    test('executor round-trips memory and goal tools', () async {
+    test('executor round-trips tools within the active chat only', () async {
       final Directory dir = await Directory.systemTemp.createTemp('mg_tools');
       addTearDown(() async {
         if (await dir.exists()) await dir.delete(recursive: true);
@@ -218,32 +246,50 @@ void main() {
           'text': 'User prefers concise answers',
           'category': 'preference',
         },
+        sessionId: 'chat-a',
       );
       expect(saved.ok, isTrue);
       final ToolResult recalled = await executor.execute(
         'memory_recall',
         <String, dynamic>{'query': 'concise answers'},
+        sessionId: 'chat-a',
       );
       expect(recalled.ok, isTrue);
       expect(recalled.llmOutput, contains('concise answers'));
+      // ISOLATION: the same recall inside another chat finds nothing.
+      final ToolResult otherChat = await executor.execute(
+        'memory_recall',
+        <String, dynamic>{'query': 'concise answers'},
+        sessionId: 'chat-b',
+      );
+      expect(otherChat.llmOutput, isNot(contains('concise answers')));
 
       final ToolResult created = await executor.execute(
         'goal_create',
         <String, dynamic>{'title': 'Finish MAgents', 'progress': 20},
+        sessionId: 'chat-a',
       );
       expect(created.ok, isTrue);
       final ToolResult listed = await executor.execute(
         'goal_list',
         <String, dynamic>{},
+        sessionId: 'chat-a',
       );
       expect(listed.llmOutput, contains('Finish MAgents'));
-      final String goalId = goalSvc.list().single.id;
+      final ToolResult listedB = await executor.execute(
+        'goal_list',
+        <String, dynamic>{},
+        sessionId: 'chat-b',
+      );
+      expect(listedB.llmOutput, isNot(contains('Finish MAgents')));
+      final String goalId = goalSvc.list('chat-a').single.id;
       final ToolResult completed = await executor.execute(
         'goal_complete',
         <String, dynamic>{'id': goalId},
+        sessionId: 'chat-a',
       );
       expect(completed.ok, isTrue);
-      expect(goalSvc.list().single.status, GoalStatus.done);
+      expect(goalSvc.list('chat-a').single.status, GoalStatus.done);
     });
 
     test('memory tools degrade gracefully without a service', () async {
@@ -259,6 +305,7 @@ void main() {
       final ToolResult result = await executor.execute(
         'memory_list',
         <String, dynamic>{},
+        sessionId: 'chat-a',
       );
       expect(result.ok, isFalse);
       expect(result.llmOutput, contains('unavailable'));
