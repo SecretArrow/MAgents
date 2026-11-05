@@ -128,7 +128,7 @@ void main() {
       'full CronJobsScreen', (tester) async {
     await pumpApp(tester);
     await push(tester, const SettingsScreen());
-    final Finder appearance = find.text('Appearance');
+    final Finder appearance = find.text('APPEARANCE');
     final Finder cronTile = find.byKey(const Key('cronjobs-tile'));
     expect(appearance, findsOneWidget);
     expect(cronTile, findsOneWidget);
