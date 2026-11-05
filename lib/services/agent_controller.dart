@@ -2792,7 +2792,9 @@ class ChatController extends Notifier<ChatState> {
       // Memory store failure must never block a chat request.
     }
     try {
-      final String goalSummary = ref.read(goalServiceProvider).promptSummary(run.sessionId);
+      final String goalSummary = ref
+          .read(goalServiceProvider)
+          .promptSummary(run.sessionId);
       if (goalSummary.isNotEmpty) {
         if (content.isNotEmpty) content.writeln();
         content

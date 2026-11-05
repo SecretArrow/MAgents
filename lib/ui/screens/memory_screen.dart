@@ -179,8 +179,7 @@ class _MemoryScreenState extends ConsumerState<MemoryScreen> {
       );
     }
     final List<MemoryEntry> entries =
-        ref.watch(memoryListProvider(sessionId)).value ??
-        const <MemoryEntry>[];
+        ref.watch(memoryListProvider(sessionId)).value ?? const <MemoryEntry>[];
     return Scaffold(
       appBar: AppBar(title: const Text('Memory')),
       floatingActionButton: FloatingActionButton.extended(

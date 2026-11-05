@@ -130,7 +130,11 @@ class MemoryService {
     if (all.isEmpty) return '';
     final List<MemoryEntry> picked = <MemoryEntry>[];
     final Set<String> seen = <String>{};
-    for (final MemoryEntry e in search(sessionId, lastUserText, limit: promptMaxEntries)) {
+    for (final MemoryEntry e in search(
+      sessionId,
+      lastUserText,
+      limit: promptMaxEntries,
+    )) {
       if (seen.add(e.id)) picked.add(e);
     }
     final StringBuffer out = StringBuffer();

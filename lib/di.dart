@@ -581,11 +581,9 @@ final contextListProvider = FutureProvider<List<ContextEntry>>(
 );
 
 /// Prompt Library entries (reactive across screens).
-final memoryListProvider =
-    FutureProvider.family<List<MemoryEntry>, String>(
-      (ref, sessionId) async =>
-          ref.watch(memoryRepositoryProvider).load(sessionId),
-    );
+final memoryListProvider = FutureProvider.family<List<MemoryEntry>, String>(
+  (ref, sessionId) async => ref.watch(memoryRepositoryProvider).load(sessionId),
+);
 
 final goalListProvider = FutureProvider.family<List<GoalEntry>, String>(
   (ref, sessionId) async => ref.watch(goalRepositoryProvider).load(sessionId),
