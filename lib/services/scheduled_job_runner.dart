@@ -155,21 +155,6 @@ class ScheduledJobRunner {
   }
 }
 
-/// Adapter: lets the app's existing [BackgroundRun] notification
-/// plumbing serve as the runner's [JobNotificationSink].
-class BackgroundRunJobNotifications implements JobNotificationSink {
-  const BackgroundRunJobNotifications(this._run);
-
-  final BackgroundRun _run;
-
-  @override
-  Future<void> notifyDone({
-    required String title,
-    required String text,
-    String? sessionId,
-  }) => _run.notifyDone(title: title, text: text, sessionId: sessionId);
-}
-
 /// Production [TelegramConfigStore]: token in the encrypted [SecretBox]
 /// (key `magents.telegram.botToken`), chat id in SharedPreferences.
 class PrefsTelegramConfigStore implements TelegramConfigStore {

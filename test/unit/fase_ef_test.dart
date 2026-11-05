@@ -28,18 +28,26 @@ import '../support/test_doubles.dart';
 void main() {
   group('reminders', () {
     test('repeat rolls to the next occurrence', () {
-      final DateTime daily = nextOccurrence(
-        ReminderRepeat.daily,
-        DateTime(2026, 1, 1, 9),
-        DateTime(2026, 1, 3, 10),
+      ReminderEntry entry(ReminderRepeat repeat) => ReminderEntry(
+        id: 'x',
+        title: 'x',
+        dueAt: DateTime(2026, 1, 1, 9),
+        repeat: repeat,
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
       );
-      expect(daily, DateTime(2026, 1, 4, 9));
-      final DateTime weekly = nextOccurrence(
-        ReminderRepeat.weekly,
-        DateTime(2026, 1, 1, 9),
-        DateTime(2026, 1, 2, 10),
+      expect(
+        entry(ReminderRepeat.daily).nextOccurrence(DateTime(2026, 1, 3, 10)),
+        DateTime(2026, 1, 4, 9),
       );
-      expect(weekly, DateTime(2026, 1, 8, 9));
+      expect(
+        entry(ReminderRepeat.weekly).nextOccurrence(DateTime(2026, 1, 2, 10)),
+        DateTime(2026, 1, 8, 9),
+      );
+      expect(
+        entry(ReminderRepeat.none).nextOccurrence(DateTime(2026, 1, 2, 10)),
+        DateTime(2026, 1, 1, 9),
+      );
     });
 
     test('create/list/complete + per-chat isolation', () async {
@@ -97,6 +105,7 @@ void main() {
       DateTime? nextRunAt,
     }) => ScheduledJob(
       id: 'j',
+      sessionId: 'chat-a',
       title: 't',
       message: 'm',
       kind: kind,
@@ -209,6 +218,7 @@ void main() {
           ...repo.load('chat-a'),
           ScheduledJob(
             id: 'due-$i',
+            sessionId: 'chat-a',
             title: 'Due $i',
             message: 'boom $i',
             kind: JobScheduleKind.once,
@@ -219,15 +229,20 @@ void main() {
           ),
         ]);
       }
-      final List<String> notified = <String>[];
+      final RecordingBackgroundRun recording = RecordingBackgroundRun();
       final ScheduledJobRunner runner = ScheduledJobRunner(
         jobs: svc,
-        notifications: _FakeNotifications(notified),
+        notifications: recording,
+        telegram: TelegramSender(),
         configStore: MemoryTelegramConfigStore(),
         listSessionIds: () async => <String>['chat-a', 'chat-b'],
       );
       await runner.checkAll();
-      expect(notified, hasLength(3), reason: 'ALL due jobs fire');
+      expect(
+        recording.doneNotifications,
+        hasLength(3),
+        reason: 'ALL due jobs fire',
+      );
       final List<ScheduledJob> after = svc.list('chat-a');
       expect(after.every((ScheduledJob j) => !j.enabled), isTrue,
           reason: 'once jobs disable after firing');
@@ -245,6 +260,7 @@ void main() {
       await repo.save('chat-a', <ScheduledJob>[
         ScheduledJob(
           id: 'both-1',
+          sessionId: 'chat-a',
           title: 'Both',
           message: 'hello',
           kind: JobScheduleKind.once,
@@ -255,16 +271,17 @@ void main() {
           updatedAt: past,
         ),
       ]);
-      final List<String> notified = <String>[];
+      final RecordingBackgroundRun recording = RecordingBackgroundRun();
       final ScheduledJobRunner runner = ScheduledJobRunner(
         jobs: svc,
-        notifications: _FakeNotifications(notified),
+        notifications: recording,
+        telegram: TelegramSender(),
         // No token configured -> telegram errors, notify must still run.
         configStore: MemoryTelegramConfigStore(),
         listSessionIds: () async => <String>['chat-a'],
       );
       await runner.checkAll();
-      expect(notified, hasLength(1));
+      expect(recording.doneNotifications, hasLength(1));
       expect(svc.list('chat-a').single.lastStatus, startsWith('error'));
     });
   });
@@ -475,19 +492,4 @@ void main() {
       expect(listB.llmOutput, contains('No jobs'));
     });
   });
-}
-
-class _FakeNotifications implements JobNotificationSink {
-  _FakeNotifications(this.sent);
-
-  final List<String> sent;
-
-  @override
-  Future<void> notifyDone({
-    required String title,
-    required String text,
-    String? sessionId,
-  }) async {
-    sent.add('$title|$text|${sessionId ?? ''}');
-  }
 }

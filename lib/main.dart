@@ -86,7 +86,7 @@ Future<void> main() async {
   );
   final ScheduledJobRunner runner = ScheduledJobRunner(
     jobs: ScheduledJobService(jobRepo),
-    notifications: BackgroundRunJobNotifications(BackgroundRunService()),
+    notifications: BackgroundRunService(),
     configStore: PrefsTelegramConfigStore(
       secrets: const FlutterSecretBox(),
       prefs: appLockPrefs,

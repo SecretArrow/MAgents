@@ -48,6 +48,7 @@ void main() {
             'test-session': <ScheduledJob>[
               ScheduledJob(
                 id: 'j1',
+                sessionId: 'test-session',
                 title: 'Morning digest',
                 message: 'Good morning',
                 kind: JobScheduleKind.daily,
@@ -59,6 +60,7 @@ void main() {
               ),
               ScheduledJob(
                 id: 'j2',
+                sessionId: 'test-session',
                 title: 'Weekly report',
                 message: 'Report time',
                 kind: JobScheduleKind.weekly,

@@ -751,13 +751,11 @@ class ToolExecutor {
     }
   }
 
->>>>>>> 73b2084
 
   Future<ToolResult> _goalCreate(
     Map<String, dynamic> args,
     String? sessionId,
   ) async {
-(feat(v1.51.0): cron engine (start/resume catch-up + 1-min timer, existing notify plumbing, tap opens owning chat), reminder/cron/skill_save tools, DI + boot wiring)
     final GoalService? svc = goals;
     if (svc == null) {
       return const ToolResult(
