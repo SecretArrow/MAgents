@@ -43,10 +43,7 @@ TelegramResult parseTelegramResponse(int statusCode, String body) {
   } catch (_) {
     // Fall through to the status-code summary.
   }
-  return TelegramResult(
-    ok: false,
-    message: 'error: HTTP $statusCode',
-  );
+  return TelegramResult(ok: false, message: 'error: HTTP $statusCode');
 }
 
 class TelegramSender {

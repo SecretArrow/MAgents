@@ -85,10 +85,10 @@ class BriefingScreen extends ConsumerWidget {
                 leading: const Icon(Icons.alarm_rounded, size: 20),
                 title: Text(r.title),
                 subtitle: Text(
-                  r.dueAt.toIso8601String().substring(0, 16).replaceAll(
-                    'T',
-                    ' ',
-                  ),
+                  r.dueAt
+                      .toIso8601String()
+                      .substring(0, 16)
+                      .replaceAll('T', ' '),
                 ),
               ),
           ],

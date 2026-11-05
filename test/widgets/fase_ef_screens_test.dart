@@ -87,9 +87,8 @@ void main() {
 
   Future<void> push(WidgetTester tester, Widget screen) async {
     final BuildContext context = tester.element(find.byType(Scaffold).first);
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => screen),
-    );
+    await Navigator.of(context)
+        .push(MaterialPageRoute<void>(builder: (_) => screen));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
   }

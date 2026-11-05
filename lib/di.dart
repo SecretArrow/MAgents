@@ -107,9 +107,7 @@ final reminderRepositoryProvider = Provider<ReminderRepository>((ref) {
 });
 
 /// Must be overridden in main() with a real repository (v1.51.0).
-final scheduledJobRepositoryProvider = Provider<ScheduledJobRepository>((
-  ref,
-) {
+final scheduledJobRepositoryProvider = Provider<ScheduledJobRepository>((ref) {
   throw UnimplementedError(
     'scheduledJobRepositoryProvider must be overridden in main()',
   );
@@ -141,8 +139,7 @@ final scheduledJobRunnerProvider = Provider<ScheduledJobRunner>(
     telegram: ref.watch(telegramSenderProvider),
     configStore: ref.watch(telegramConfigStoreProvider),
     listSessionIds: () async => <String>[
-      for (final s in await ref.read(chatStoreProvider).listSummaries())
-        s.id,
+      for (final s in await ref.read(chatStoreProvider).listSummaries()) s.id,
     ],
   ),
 );
@@ -656,11 +653,9 @@ final goalListProvider = FutureProvider.family<List<GoalEntry>, String>(
   (ref, sessionId) async => ref.watch(goalRepositoryProvider).load(sessionId),
 );
 
-final reminderListProvider =
-    FutureProvider.family<List<ReminderEntry>, String>(
-      (ref, sessionId) async =>
-          ref.watch(reminderServiceProvider).list(sessionId),
-    );
+final reminderListProvider = FutureProvider.family<List<ReminderEntry>, String>(
+  (ref, sessionId) async => ref.watch(reminderServiceProvider).list(sessionId),
+);
 
 final scheduledJobListProvider =
     FutureProvider.family<List<ScheduledJob>, String>(

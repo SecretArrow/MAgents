@@ -75,7 +75,8 @@ void main() {
 
     test('prefs repository round-trip is per-chat keyed', () async {
       SharedPreferences.setMockInitialValues(<String, Object>{});
-      final PrefsReminderRepository repo = await PrefsReminderRepository.create();
+      final PrefsReminderRepository repo =
+          await PrefsReminderRepository.create();
       await repo.save('chat-a', <ReminderEntry>[
         ReminderEntry(
           id: 'r1',
@@ -175,17 +176,11 @@ void main() {
 
     test('disabled jobs are never due; fresh repeating job is not due', () {
       expect(
-        ScheduledJobService.isDue(
-          job(enabled: false, nextRunAt: t0),
-          t0,
-        ),
+        ScheduledJobService.isDue(job(enabled: false, nextRunAt: t0), t0),
         isFalse,
       );
       expect(ScheduledJobService.isDue(job(), t0), isFalse);
-      expect(
-        ScheduledJobService.isDue(job(nextRunAt: t0), t0),
-        isTrue,
-      );
+      expect(ScheduledJobService.isDue(job(nextRunAt: t0), t0), isTrue);
     });
   });
 
@@ -207,50 +202,52 @@ void main() {
       expect(svc.list('chat-b'), isEmpty, reason: 'jobs never leak chats');
     });
 
-    test('several jobs due at once all fire; one failure stops nothing',
-        () async {
-      final InMemoryScheduledJobRepository repo =
-          InMemoryScheduledJobRepository();
-      final ScheduledJobService svc = ScheduledJobService(repo);
-      final DateTime past = DateTime.now().subtract(const Duration(hours: 1));
-      for (int i = 0; i < 3; i++) {
-        await repo.save('chat-a', <ScheduledJob>[
-          ...repo.load('chat-a'),
-          ScheduledJob(
-            id: 'due-$i',
-            sessionId: 'chat-a',
-            title: 'Due $i',
-            message: 'boom $i',
-            kind: JobScheduleKind.once,
-            runAt: past,
-            nextRunAt: past,
-            createdAt: past,
-            updatedAt: past,
-          ),
-        ]);
-      }
-      final RecordingBackgroundRun recording = RecordingBackgroundRun();
-      final ScheduledJobRunner runner = ScheduledJobRunner(
-        jobs: svc,
-        notifications: recording,
-        telegram: TelegramSender(),
-        configStore: MemoryTelegramConfigStore(),
-        listSessionIds: () async => <String>['chat-a', 'chat-b'],
-      );
-      await runner.checkAll();
-      expect(
-        recording.doneNotifications,
-        hasLength(3),
-        reason: 'ALL due jobs fire',
-      );
-      final List<ScheduledJob> after = svc.list('chat-a');
-      expect(after.every((ScheduledJob j) => !j.enabled), isTrue,
-          reason: 'once jobs disable after firing');
-      expect(
-        after.every((ScheduledJob j) => j.lastStatus == 'ok'),
-        isTrue,
-      );
-    });
+    test(
+      'several jobs due at once all fire; one failure stops nothing',
+      () async {
+        final InMemoryScheduledJobRepository repo =
+            InMemoryScheduledJobRepository();
+        final ScheduledJobService svc = ScheduledJobService(repo);
+        final DateTime past = DateTime.now().subtract(const Duration(hours: 1));
+        for (int i = 0; i < 3; i++) {
+          await repo.save('chat-a', <ScheduledJob>[
+            ...repo.load('chat-a'),
+            ScheduledJob(
+              id: 'due-$i',
+              sessionId: 'chat-a',
+              title: 'Due $i',
+              message: 'boom $i',
+              kind: JobScheduleKind.once,
+              runAt: past,
+              nextRunAt: past,
+              createdAt: past,
+              updatedAt: past,
+            ),
+          ]);
+        }
+        final RecordingBackgroundRun recording = RecordingBackgroundRun();
+        final ScheduledJobRunner runner = ScheduledJobRunner(
+          jobs: svc,
+          notifications: recording,
+          telegram: TelegramSender(),
+          configStore: MemoryTelegramConfigStore(),
+          listSessionIds: () async => <String>['chat-a', 'chat-b'],
+        );
+        await runner.checkAll();
+        expect(
+          recording.doneNotifications,
+          hasLength(3),
+          reason: 'ALL due jobs fire',
+        );
+        final List<ScheduledJob> after = svc.list('chat-a');
+        expect(
+          after.every((ScheduledJob j) => !j.enabled),
+          isTrue,
+          reason: 'once jobs disable after firing',
+        );
+        expect(after.every((ScheduledJob j) => j.lastStatus == 'ok'), isTrue);
+      },
+    );
 
     test('telegram failure still notifies on action=both', () async {
       final InMemoryScheduledJobRepository repo =
@@ -349,8 +346,10 @@ void main() {
       expect(data.nextJob?.title, 'Morning ping');
       expect(data.pinnedMemories.single.text, 'Pinned fact');
       expect(briefing.build('chat-b').goals, isEmpty);
-      expect(briefing.build('chat-b').pinnedMemories.single.text,
-          'Other chat pinned');
+      expect(
+        briefing.build('chat-b').pinnedMemories.single.text,
+        'Other chat pinned',
+      );
     });
   });
 

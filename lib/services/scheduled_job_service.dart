@@ -19,10 +19,7 @@ class ScheduledJobService {
   /// Computes the next fire time strictly after [from] for a job with
   /// the given schedule fields. Returns null only for a one-shot job
   /// whose time has passed (it is due NOW, handled by [dueJobs]).
-  static DateTime? computeNextRun(
-    ScheduledJob job, {
-    required DateTime from,
-  }) {
+  static DateTime? computeNextRun(ScheduledJob job, {required DateTime from}) {
     switch (job.kind) {
       case JobScheduleKind.once:
         final DateTime? at = job.runAt;
@@ -67,24 +64,21 @@ class ScheduledJobService {
   /// immediately (no surprise catch-up storms on creation).
   static bool isDue(ScheduledJob job, DateTime now) {
     if (!job.enabled) return false;
-    final DateTime? next = job.nextRunAt ??
-        (job.kind == JobScheduleKind.once ? job.runAt : null);
+    final DateTime? next =
+        job.nextRunAt ?? (job.kind == JobScheduleKind.once ? job.runAt : null);
     return next != null && !next.isAfter(now);
   }
 
   /// ALL jobs of this chat that must fire at [now] (never just one).
-  List<ScheduledJob> dueJobs(String sessionId, DateTime now) => _repo
-      .load(sessionId)
-      .where((ScheduledJob j) => isDue(j, now))
-      .toList();
+  List<ScheduledJob> dueJobs(String sessionId, DateTime now) =>
+      _repo.load(sessionId).where((ScheduledJob j) => isDue(j, now)).toList();
 
   /// The soonest upcoming fire across this chat's enabled jobs.
   ScheduledJob? nextUpcoming(String sessionId, DateTime now) {
     ScheduledJob? best;
     for (final ScheduledJob j in _repo.load(sessionId)) {
       if (!j.enabled) continue;
-      final DateTime? next =
-          j.nextRunAt ?? computeNextRun(j, from: now);
+      final DateTime? next = j.nextRunAt ?? computeNextRun(j, from: now);
       if (next == null) continue;
       if (best == null ||
           next.isBefore(best.nextRunAt ?? computeNextRun(best, from: now)!)) {
@@ -174,11 +168,9 @@ class ScheduledJobService {
     ];
     if (updated == null) return null;
     // Any schedule-affecting edit reschedules from now.
-    updated = updated!.copyWith(
-      nextRunAt: computeNextRun(updated!, from: at),
-    );
+    updated = updated.copyWith(nextRunAt: computeNextRun(updated, from: at));
     final int idx = next.indexWhere((ScheduledJob j) => j.id == id);
-    if (idx >= 0) next[idx] = updated!;
+    if (idx >= 0) next[idx] = updated;
     await _repo.save(sessionId, next);
     return updated;
   }

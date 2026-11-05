@@ -60,7 +60,10 @@ class _CronJobsScreenState extends ConsumerState<CronJobsScreen> {
     await ref
         .read(telegramConfigStoreProvider)
         .save(
-          TelegramConfig(botToken: _token.text.trim(), chatId: _chatId.text.trim()),
+          TelegramConfig(
+            botToken: _token.text.trim(),
+            chatId: _chatId.text.trim(),
+          ),
         );
     if (mounted) showAppMessage(context, 'Telegram settings saved');
   }
@@ -173,7 +176,7 @@ class _CronJobsScreenState extends ConsumerState<CronJobsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('cron-add-fab'),
         heroTag: 'cron-add',
-        onPressed: () => _openEditor(),
+        onPressed: _openEditor,
         icon: const Icon(Icons.add_rounded),
         label: const Text('New job'),
       ),
@@ -275,8 +278,7 @@ class _CronJobsScreenState extends ConsumerState<CronJobsScreen> {
                       job.action.name,
                       if (job.nextRunAt != null)
                         'next ${job.nextRunAt!.toIso8601String().substring(0, 16).replaceAll('T', ' ')}',
-                      if (job.lastStatus.isNotEmpty)
-                        'last: ${job.lastStatus}',
+                      if (job.lastStatus.isNotEmpty) 'last: ${job.lastStatus}',
                     ].join(' · '),
                   ),
                   trailing: Row(
@@ -469,8 +471,7 @@ class _CronJobEditorScreenState extends ConsumerState<CronJobEditorScreen> {
                 labelText: 'Fire at (YYYY-MM-DD HH:MM)',
               ),
             ),
-          if (_kind == JobScheduleKind.daily ||
-              _kind == JobScheduleKind.weekly)
+          if (_kind == JobScheduleKind.daily || _kind == JobScheduleKind.weekly)
             ListTile(
               key: const Key('cron-time-tile'),
               contentPadding: EdgeInsets.zero,

@@ -17,7 +17,8 @@ class TelegramConfig {
   final String botToken;
   final String chatId;
 
-  bool get isConfigured => botToken.trim().isNotEmpty && chatId.trim().isNotEmpty;
+  bool get isConfigured =>
+      botToken.trim().isNotEmpty && chatId.trim().isNotEmpty;
 }
 
 /// Loads/saves the Telegram configuration. Implemented in di.dart wiring
@@ -142,12 +143,7 @@ class ScheduledJobRunner {
         ? 'ok'
         : 'error: ${problems.join('; ')}';
     try {
-      await jobs.markFired(
-        job.sessionId,
-        job.id,
-        firedAt: at,
-        status: status,
-      );
+      await jobs.markFired(job.sessionId, job.id, firedAt: at, status: status);
     } catch (_) {
       // Recording is best-effort too.
     }

@@ -722,10 +722,22 @@ List<Map<String, dynamic>> buildAgentTools({
     'reminder_create',
     'Create a reminder in THIS chat only (per-chat isolation). dueAt is an ISO-8601 local datetime; repeat: none|daily|weekly.',
     <String, dynamic>{
-      'title': <String, dynamic>{'type': 'string', 'description': 'Reminder title'},
-      'dueAt': <String, dynamic>{'type': 'string', 'description': 'Due datetime, ISO-8601'},
-      'detail': <String, dynamic>{'type': 'string', 'description': 'Optional detail'},
-      'repeat': <String, dynamic>{'type': 'string', 'description': 'none|daily|weekly'},
+      'title': <String, dynamic>{
+        'type': 'string',
+        'description': 'Reminder title',
+      },
+      'dueAt': <String, dynamic>{
+        'type': 'string',
+        'description': 'Due datetime, ISO-8601',
+      },
+      'detail': <String, dynamic>{
+        'type': 'string',
+        'description': 'Optional detail',
+      },
+      'repeat': <String, dynamic>{
+        'type': 'string',
+        'description': 'none|daily|weekly',
+      },
     },
     <String>['title', 'dueAt'],
   ),
@@ -739,7 +751,10 @@ List<Map<String, dynamic>> buildAgentTools({
     'reminder_complete',
     'Mark a reminder of THIS chat done; a repeating reminder rolls to its next occurrence instead.',
     <String, dynamic>{
-      'id': <String, dynamic>{'type': 'string', 'description': 'Reminder id from reminder_list'},
+      'id': <String, dynamic>{
+        'type': 'string',
+        'description': 'Reminder id from reminder_list',
+      },
     },
     <String>['id'],
   ),
@@ -748,14 +763,38 @@ List<Map<String, dynamic>> buildAgentTools({
     'Create a scheduled job in THIS chat only (a chat can have MANY jobs - each call adds one). kind: once|daily|weekly|interval; action: notify|telegram|both. For once pass runAt (ISO-8601); for daily/weekly pass hour+minute (weekly also weekday 1=Mon..7=Sun); for interval pass intervalMinutes.',
     <String, dynamic>{
       'title': <String, dynamic>{'type': 'string', 'description': 'Job title'},
-      'message': <String, dynamic>{'type': 'string', 'description': 'Text shown in the notification / sent to Telegram'},
-      'kind': <String, dynamic>{'type': 'string', 'description': 'once|daily|weekly|interval'},
-      'action': <String, dynamic>{'type': 'string', 'description': 'notify|telegram|both'},
-      'runAt': <String, dynamic>{'type': 'string', 'description': 'ISO-8601 datetime (kind=once)'},
-      'hour': <String, dynamic>{'type': 'integer', 'description': 'Hour 0-23 (daily/weekly)'},
-      'minute': <String, dynamic>{'type': 'integer', 'description': 'Minute 0-59 (daily/weekly)'},
-      'weekday': <String, dynamic>{'type': 'integer', 'description': 'Weekday 1-7 (weekly)'},
-      'intervalMinutes': <String, dynamic>{'type': 'integer', 'description': 'Interval in minutes (interval)'},
+      'message': <String, dynamic>{
+        'type': 'string',
+        'description': 'Text shown in the notification / sent to Telegram',
+      },
+      'kind': <String, dynamic>{
+        'type': 'string',
+        'description': 'once|daily|weekly|interval',
+      },
+      'action': <String, dynamic>{
+        'type': 'string',
+        'description': 'notify|telegram|both',
+      },
+      'runAt': <String, dynamic>{
+        'type': 'string',
+        'description': 'ISO-8601 datetime (kind=once)',
+      },
+      'hour': <String, dynamic>{
+        'type': 'integer',
+        'description': 'Hour 0-23 (daily/weekly)',
+      },
+      'minute': <String, dynamic>{
+        'type': 'integer',
+        'description': 'Minute 0-59 (daily/weekly)',
+      },
+      'weekday': <String, dynamic>{
+        'type': 'integer',
+        'description': 'Weekday 1-7 (weekly)',
+      },
+      'intervalMinutes': <String, dynamic>{
+        'type': 'integer',
+        'description': 'Interval in minutes (interval)',
+      },
     },
     <String>['title', 'message', 'kind'],
   ),
@@ -769,8 +808,14 @@ List<Map<String, dynamic>> buildAgentTools({
     'cron_update',
     'Enable or disable a scheduled job of THIS chat.',
     <String, dynamic>{
-      'id': <String, dynamic>{'type': 'string', 'description': 'Job id from cron_list'},
-      'enabled': <String, dynamic>{'type': 'boolean', 'description': 'New enabled state'},
+      'id': <String, dynamic>{
+        'type': 'string',
+        'description': 'Job id from cron_list',
+      },
+      'enabled': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'New enabled state',
+      },
     },
     <String>['id', 'enabled'],
   ),
@@ -778,7 +823,10 @@ List<Map<String, dynamic>> buildAgentTools({
     'cron_delete',
     'Delete a scheduled job of THIS chat.',
     <String, dynamic>{
-      'id': <String, dynamic>{'type': 'string', 'description': 'Job id from cron_list'},
+      'id': <String, dynamic>{
+        'type': 'string',
+        'description': 'Job id from cron_list',
+      },
     },
     <String>['id'],
   ),
@@ -786,9 +834,18 @@ List<Map<String, dynamic>> buildAgentTools({
     'skill_save',
     'Save a NEW reusable skill (playbook) from this chat: a name, a short description of when to use it, and the instruction body. It appears in the Skills screen like any installed skill.',
     <String, dynamic>{
-      'name': <String, dynamic>{'type': 'string', 'description': 'Skill name (letters, digits, dashes)'},
-      'description': <String, dynamic>{'type': 'string', 'description': 'When the agent should use this skill'},
-      'instructions': <String, dynamic>{'type': 'string', 'description': 'The skill instructions (markdown)'},
+      'name': <String, dynamic>{
+        'type': 'string',
+        'description': 'Skill name (letters, digits, dashes)',
+      },
+      'description': <String, dynamic>{
+        'type': 'string',
+        'description': 'When the agent should use this skill',
+      },
+      'instructions': <String, dynamic>{
+        'type': 'string',
+        'description': 'The skill instructions (markdown)',
+      },
     },
     <String>['name', 'description', 'instructions'],
   ),

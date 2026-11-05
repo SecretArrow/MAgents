@@ -495,13 +495,12 @@ class ToolExecutor {
 
   // -- Reminders (v1.51.0, per-chat) ------------------------------------
 
-  ReminderRepeat _reminderRepeat(Object? raw) => switch (raw
-      ?.toString()
-      .toLowerCase()) {
-    'daily' => ReminderRepeat.daily,
-    'weekly' => ReminderRepeat.weekly,
-    _ => ReminderRepeat.none,
-  };
+  ReminderRepeat _reminderRepeat(Object? raw) =>
+      switch (raw?.toString().toLowerCase()) {
+        'daily' => ReminderRepeat.daily,
+        'weekly' => ReminderRepeat.weekly,
+        _ => ReminderRepeat.none,
+      };
 
   Future<ToolResult> _reminderCreate(
     Map<String, dynamic> args,
@@ -536,7 +535,8 @@ class ToolExecutor {
     }
     return ToolResult(
       ok: true,
-      llmOutput: 'Reminder saved for this chat: ${entry.id} "${entry.title}" '
+      llmOutput:
+          'Reminder saved for this chat: ${entry.id} "${entry.title}" '
           'due ${entry.dueAt.toIso8601String()} (repeat ${entry.repeat.name}).',
     );
   }
@@ -551,7 +551,10 @@ class ToolExecutor {
     }
     final List<ReminderEntry> entries = svc.list(sessionId ?? '');
     if (entries.isEmpty) {
-      return const ToolResult(ok: true, llmOutput: 'No reminders in this chat.');
+      return const ToolResult(
+        ok: true,
+        llmOutput: 'No reminders in this chat.',
+      );
     }
     return ToolResult(
       ok: true,
@@ -596,14 +599,13 @@ class ToolExecutor {
 
   // -- CronJobs (v1.51.0, per-chat, multi-job) ---------------------------
 
-  JobScheduleKind _jobKind(Object? raw) => switch (raw
-      ?.toString()
-      .toLowerCase()) {
-    'daily' => JobScheduleKind.daily,
-    'weekly' => JobScheduleKind.weekly,
-    'interval' => JobScheduleKind.interval,
-    _ => JobScheduleKind.once,
-  };
+  JobScheduleKind _jobKind(Object? raw) =>
+      switch (raw?.toString().toLowerCase()) {
+        'daily' => JobScheduleKind.daily,
+        'weekly' => JobScheduleKind.weekly,
+        'interval' => JobScheduleKind.interval,
+        _ => JobScheduleKind.once,
+      };
 
   JobAction _jobAction(Object? raw) => switch (raw?.toString().toLowerCase()) {
     'telegram' => JobAction.telegram,
@@ -644,7 +646,8 @@ class ToolExecutor {
     }
     return ToolResult(
       ok: true,
-      llmOutput: 'Job created for this chat: ${job.id} "${job.title}" '
+      llmOutput:
+          'Job created for this chat: ${job.id} "${job.title}" '
           '(${job.kind.name}, ${job.action.name}) next run '
           '${job.nextRunAt?.toIso8601String() ?? '—'}.',
     );
@@ -699,7 +702,8 @@ class ToolExecutor {
     }
     return ToolResult(
       ok: true,
-      llmOutput: 'Job ${job.id} is now ${job.enabled ? 'enabled' : 'disabled'}.',
+      llmOutput:
+          'Job ${job.id} is now ${job.enabled ? 'enabled' : 'disabled'}.',
     );
   }
 
@@ -720,7 +724,9 @@ class ToolExecutor {
     );
     return ToolResult(
       ok: removed,
-      llmOutput: removed ? 'Job deleted.' : 'cron_delete failed: unknown job id.',
+      llmOutput: removed
+          ? 'Job deleted.'
+          : 'cron_delete failed: unknown job id.',
     );
   }
 
@@ -742,7 +748,8 @@ class ToolExecutor {
       );
       return ToolResult(
         ok: true,
-        llmOutput: 'Skill saved: ${report.skill.name} '
+        llmOutput:
+            'Skill saved: ${report.skill.name} '
             '(${report.skill.source}). It is now available in the '
             'Skills screen.',
       );
@@ -750,7 +757,6 @@ class ToolExecutor {
       return ToolResult(ok: false, llmOutput: 'skill_save failed: $e');
     }
   }
-
 
   Future<ToolResult> _goalCreate(
     Map<String, dynamic> args,

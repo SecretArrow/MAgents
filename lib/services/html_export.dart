@@ -18,9 +18,7 @@ String buildChatHtml({
   final StringBuffer body = StringBuffer();
   for (final ChatMessage m in messages) {
     if (m.role == Role.system || m.role == Role.tool) continue;
-    final String who = m.role == Role.user
-        ? 'You'
-        : (m.model ?? 'Assistant');
+    final String who = m.role == Role.user ? 'You' : (m.model ?? 'Assistant');
     final String cls = m.role == Role.user ? 'user' : 'assistant';
     body
       ..writeln('<section class="msg $cls">')

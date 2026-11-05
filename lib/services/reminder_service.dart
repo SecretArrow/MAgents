@@ -107,20 +107,23 @@ class ReminderService {
   }
 
   /// Open reminders already due (overdue + due within [window]).
-  List<ReminderEntry> due(String sessionId, DateTime now, {Duration window = const Duration(hours: 24)}) {
+  List<ReminderEntry> due(
+    String sessionId,
+    DateTime now, {
+    Duration window = const Duration(hours: 24),
+  }) {
     return list(sessionId)
         .where(
-          (ReminderEntry e) =>
-              !e.done && e.dueAt.isBefore(now.add(window)),
+          (ReminderEntry e) => !e.done && e.dueAt.isBefore(now.add(window)),
         )
         .toList();
   }
 
   /// Next open reminder for this chat, if any.
   ReminderEntry? next(String sessionId) {
-    final List<ReminderEntry> open = list(
-      sessionId,
-    ).where((ReminderEntry e) => !e.done).toList();
+    final List<ReminderEntry> open = list(sessionId)
+        .where((ReminderEntry e) => !e.done)
+        .toList();
     return open.isEmpty ? null : open.first;
   }
 }
