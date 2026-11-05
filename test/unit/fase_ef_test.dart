@@ -138,11 +138,17 @@ void main() {
 
     test('weekly: advances to the matching weekday', () {
       expect(
-        ScheduledJobService.computeNextRun(job(weekday: 3), from: t0),
+        ScheduledJobService.computeNextRun(
+          job(kind: JobScheduleKind.weekly, weekday: 3),
+          from: t0,
+        ),
         DateTime(2026, 3, 4, 9, 30),
       );
       expect(
-        ScheduledJobService.computeNextRun(job(weekday: 1), from: t0),
+        ScheduledJobService.computeNextRun(
+          job(kind: JobScheduleKind.weekly, weekday: 1),
+          from: t0,
+        ),
         DateTime(2026, 3, 2, 9, 30),
       );
     });
