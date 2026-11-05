@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -86,11 +87,15 @@ void main() {
   }
 
   Future<void> push(WidgetTester tester, Widget screen) async {
-    final BuildContext context = tester.element(find.byType(Scaffold).first);
-    await Navigator.of(context)
-        .push(MaterialPageRoute<void>(builder: (_) => screen));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
+    final NavigatorState navigator = tester.state(find.byType(Navigator));
+    unawaited(
+      navigator.push(MaterialPageRoute<void>(builder: (_) => screen)),
+    );
+    await tester.pumpAndSettle(
+      const Duration(milliseconds: 100),
+      EnginePhase.sendSemanticsUpdate,
+      const Duration(seconds: 10),
+    );
   }
 
   testWidgets('RemindersScreen lists this chat reminders', (tester) async {
@@ -137,8 +142,11 @@ void main() {
     await tester.ensureVisible(cronTile);
     await tester.pump();
     await tester.tap(cronTile);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle(
+      const Duration(milliseconds: 100),
+      EnginePhase.sendSemanticsUpdate,
+      const Duration(seconds: 10),
+    );
     expect(find.byType(CronJobsScreen), findsOneWidget);
     expect(find.byKey(const Key('telegram-card')), findsOneWidget);
   });
