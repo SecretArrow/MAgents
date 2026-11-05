@@ -460,7 +460,7 @@ void main() {
         expect(result.llmOutput, contains('uploads/locked/hello.txt'));
         expect(
           File('${tempDir.path}/uploads/locked/hello.txt').readAsStringSync(),
-          'Hello from an encrypted zip! MAgents can decrypt this.\n',
+          'Hello from an encrypted zip! ZAgents can decrypt this.\n',
         );
       },
     );

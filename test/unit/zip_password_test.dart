@@ -10,7 +10,7 @@ import 'package:magents/services/file_system_service.dart';
 void main() {
   const String password = 'fixt-pass-42';
   const String hello =
-      'Hello from an encrypted zip! MAgents can decrypt this.\n';
+      'Hello from an encrypted zip! ZAgents can decrypt this.\n';
   const String info =
       '# Encrypted fixture\nThis entry sits in a nested folder.\n';
 
