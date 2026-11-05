@@ -8,6 +8,8 @@ import '../../di.dart';
 import '../../l10n/app_strings.dart';
 import '../../models/models.dart';
 import '../screens/files_screen.dart';
+import '../screens/goals_screen.dart';
+import '../screens/memory_screen.dart';
 import '../screens/prompt_library_screen.dart';
 import '../screens/search_screen.dart';
 import '../screens/settings_screen.dart';
@@ -280,6 +282,40 @@ class ChatDrawer extends ConsumerWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute<void>(
                       builder: (_) => const PromptLibraryScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: ListTile(
+                key: const Key('drawer-memory'),
+                dense: true,
+                leading: const Icon(Icons.psychology_rounded, size: 20),
+                title: const Text('Memory'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const MemoryScreen(),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: ListTile(
+                key: const Key('drawer-goals'),
+                dense: true,
+                leading: const Icon(Icons.flag_rounded, size: 20),
+                title: const Text('Goals'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const GoalsScreen(),
                     ),
                   );
                 },

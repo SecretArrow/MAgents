@@ -7,6 +7,8 @@ import 'browser_session_isolation.dart';
 import 'device_shell.dart';
 import 'file_system_service.dart';
 import 'js_runtime.dart';
+import 'goal_service.dart';
+import 'memory_service.dart';
 import 'module_registry.dart';
 import 'module_runtime.dart';
 import 'npm_service.dart';
@@ -59,6 +61,8 @@ class ToolExecutor {
     this.skills,
     this.deviceStatus,
     this.bundledSkills,
+    this.memory,
+    this.goals,
   });
 
   final BrowserAutomation browser;
@@ -119,6 +123,14 @@ class ToolExecutor {
   /// rootBundle; tests inject a plain map). Nullable for legacy tests —
   /// the builtin path then reports "loader unavailable".
   final Future<Map<String, String>> Function()? bundledSkills;
+
+  /// Long-term memory behind the `memory_*` tools (v1.50.0). Nullable
+  /// for legacy tests; the tools degrade gracefully when absent.
+  final MemoryService? memory;
+
+  /// User goals behind the `goal_*` tools (v1.50.0). Nullable for
+  /// legacy tests; the tools degrade gracefully when absent.
+  final GoalService? goals;
 
   /// Cached root-availability outcome (null = not probed yet).
   bool? _rootAvailable;
@@ -222,6 +234,22 @@ class ToolExecutor {
           return await _skillUpdate(args);
         case 'skill_run':
           return await _skillRun(args, sessionId);
+        case 'memory_save':
+          return await _memorySave(args);
+        case 'memory_recall':
+          return _memoryRecall(args);
+        case 'memory_list':
+          return _memoryList(args);
+        case 'memory_forget':
+          return await _memoryForget(args);
+        case 'goal_create':
+          return await _goalCreate(args);
+        case 'goal_list':
+          return _goalList(args);
+        case 'goal_update':
+          return await _goalUpdate(args);
+        case 'goal_complete':
+          return await _goalComplete(args);
         case 'device_status':
           return await _deviceStatus();
         default:
@@ -318,6 +346,240 @@ class ToolExecutor {
           'back off (auto-retry then resumes the task automatically).',
       displayText:
           'airplane: ${airplane == null ? "?" : (airplane ? "ON" : "OFF")}, root: ${_rootAvailable!}',
+    );
+  }
+
+  // -- Long-term memory & goals (v1.50.0) --------------------------------
+
+  MemoryCategory _memoryCategory(Object? raw) =>
+      memoryCategoryFromName(raw?.toString());
+
+  Future<ToolResult> _memorySave(Map<String, dynamic> args) async {
+    final MemoryService? svc = memory;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'memory_save is unavailable in this build.',
+      );
+    }
+    final MemoryEntry? entry = await svc.add(
+      args['text']?.toString() ?? '',
+      category: _memoryCategory(args['category']),
+      pinned: args['pinned'] == true,
+    );
+    if (entry == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput:
+            'memory_save failed: empty text, duplicate, or the 500-entry '
+            'memory limit was reached.',
+      );
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: 'Saved memory ${entry.id} [${entry.category.name}]: '
+          '${entry.text}',
+      displayText: 'memory saved',
+    );
+  }
+
+  ToolResult _memoryRecall(Map<String, dynamic> args) {
+    final MemoryService? svc = memory;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'memory_recall is unavailable in this build.',
+      );
+    }
+    final String query = args['query']?.toString() ?? '';
+    final List<MemoryEntry> hits = svc.search(query, limit: 10);
+    if (hits.isEmpty) {
+      return const ToolResult(ok: true, llmOutput: 'No memories found.');
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: <String>[
+        for (final MemoryEntry e in hits)
+          '- ${e.id} [${e.category.name}]${e.pinned ? ' (pinned)' : ''} '
+              '${e.text}',
+      ].join('\n'),
+      displayText: 'memories ×${hits.length}',
+    );
+  }
+
+  ToolResult _memoryList(Map<String, dynamic> args) {
+    final MemoryService? svc = memory;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'memory_list is unavailable in this build.',
+      );
+    }
+    List<MemoryEntry> entries = svc.search('', limit: 50);
+    final Object? cat = args['category'];
+    if (cat != null && cat.toString().isNotEmpty) {
+      final MemoryCategory wanted = _memoryCategory(cat);
+      entries = entries
+          .where((MemoryEntry e) => e.category == wanted)
+          .toList();
+    }
+    if (entries.isEmpty) {
+      return const ToolResult(ok: true, llmOutput: 'No memories stored.');
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: <String>[
+        for (final MemoryEntry e in entries)
+          '- ${e.id} [${e.category.name}]${e.pinned ? ' (pinned)' : ''} '
+              '${e.text}',
+      ].join('\n'),
+      displayText: 'memories ×${entries.length}',
+    );
+  }
+
+  Future<ToolResult> _memoryForget(Map<String, dynamic> args) async {
+    final MemoryService? svc = memory;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'memory_forget is unavailable in this build.',
+      );
+    }
+    final String id = args['id']?.toString() ?? '';
+    final bool removed = id.isNotEmpty && await svc.forget(id);
+    return ToolResult(
+      ok: removed,
+      llmOutput: removed
+          ? 'Forgot memory $id.'
+          : 'memory_forget failed: no memory with id $id.',
+    );
+  }
+
+  Future<ToolResult> _goalCreate(Map<String, dynamic> args) async {
+    final GoalService? svc = goals;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'goal_create is unavailable in this build.',
+      );
+    }
+    final GoalEntry? goal = await svc.create(
+      args['title']?.toString() ?? '',
+      detail: args['detail']?.toString() ?? '',
+      dueDate: DateTime.tryParse(args['due_date']?.toString() ?? ''),
+      progress: GoalEntry.clampProgress(args['progress']),
+    );
+    if (goal == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'goal_create failed: title is required.',
+      );
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: 'Created goal ${goal.id}: ${goal.title} '
+          '(${goal.progress}%)',
+      displayText: 'goal created',
+    );
+  }
+
+  ToolResult _goalList(Map<String, dynamic> args) {
+    final GoalService? svc = goals;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'goal_list is unavailable in this build.',
+      );
+    }
+    List<GoalEntry> entries = svc.list();
+    if (args['all'] != true) {
+      final String statusName =
+          args['status']?.toString() ?? GoalStatus.active.name;
+      entries = entries
+          .where((GoalEntry g) => g.status.name == statusName)
+          .toList();
+    }
+    if (entries.isEmpty) {
+      return const ToolResult(ok: true, llmOutput: 'No goals found.');
+    }
+    final DateTime now = DateTime.now();
+    return ToolResult(
+      ok: true,
+      llmOutput: <String>[
+        for (final GoalEntry g in entries)
+          '- ${g.id} [${g.status.name}] ${g.title} (${g.progress}%)'
+              '${g.isOverdue(now) ? ' OVERDUE' : ''}'
+              '${g.dueDate == null ? '' : ' due ${g.dueDate!.toIso8601String().substring(0, 10)}'}',
+      ].join('\n'),
+      displayText: 'goals ×${entries.length}',
+    );
+  }
+
+  Future<ToolResult> _goalUpdate(Map<String, dynamic> args) async {
+    final GoalService? svc = goals;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'goal_update is unavailable in this build.',
+      );
+    }
+    final String id = args['id']?.toString() ?? '';
+    if (id.isEmpty) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'goal_update failed: id is required.',
+      );
+    }
+    GoalStatus? status;
+    final Object? rawStatus = args['status'];
+    if (rawStatus != null) {
+      status = goalStatusFromName(rawStatus.toString());
+    }
+    final Object? rawProgress = args['progress'];
+    final GoalEntry? goal = await svc.update(
+      id,
+      title: args['title']?.toString(),
+      detail: args['detail']?.toString(),
+      status: status,
+      progress: rawProgress == null
+          ? null
+          : GoalEntry.clampProgress(rawProgress),
+      dueDate: DateTime.tryParse(args['due_date']?.toString() ?? ''),
+    );
+    if (goal == null) {
+      return ToolResult(
+        ok: false,
+        llmOutput: 'goal_update failed: no goal with id $id.',
+      );
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: 'Updated goal ${goal.id}: ${goal.title} '
+          '[${goal.status.name}] (${goal.progress}%)',
+      displayText: 'goal updated',
+    );
+  }
+
+  Future<ToolResult> _goalComplete(Map<String, dynamic> args) async {
+    final GoalService? svc = goals;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'goal_complete is unavailable in this build.',
+      );
+    }
+    final String id = args['id']?.toString() ?? '';
+    final GoalEntry? goal = id.isEmpty ? null : await svc.complete(id);
+    if (goal == null) {
+      return ToolResult(
+        ok: false,
+        llmOutput: 'goal_complete failed: no goal with id $id.',
+      );
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: 'Completed goal ${goal.id}: ${goal.title}',
+      displayText: 'goal done',
     );
   }
 

@@ -1430,3 +1430,185 @@ String presetHostLabel(String baseUrl) {
   if (uri == null || uri.host.isEmpty) return baseUrl.trim();
   return uri.host;
 }
+
+/// Category of a long-term [MemoryEntry] (v1.50.0, MAgents memory).
+enum MemoryCategory { fact, preference, person, project, instruction }
+
+/// Parses a persisted [MemoryCategory] name; unknown values degrade to
+/// [MemoryCategory.fact] instead of crashing old/corrupt stores.
+MemoryCategory memoryCategoryFromName(String? name) {
+  for (final MemoryCategory c in MemoryCategory.values) {
+    if (c.name == name) return c;
+  }
+  return MemoryCategory.fact;
+}
+
+/// One long-term memory the agent can recall across chats (v1.50.0).
+/// Mirrors [ContextEntry]/[PromptEntry] JSON discipline: defensive
+/// parsing, unknown fields ignored, corrupt values degrade to defaults.
+class MemoryEntry {
+  const MemoryEntry({
+    required this.id,
+    required this.text,
+    this.category = MemoryCategory.fact,
+    this.pinned = false,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String text;
+  final MemoryCategory category;
+  final bool pinned;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  /// Hard cap for one memory text (prompt-bloat + store guard).
+  static const int maxTextLength = 1000;
+
+  static String clampText(String text) {
+    final String v = text.trim();
+    if (v.length <= maxTextLength) return v;
+    return v.substring(0, maxTextLength);
+  }
+
+  MemoryEntry copyWith({
+    String? text,
+    MemoryCategory? category,
+    bool? pinned,
+    DateTime? updatedAt,
+  }) => MemoryEntry(
+    id: id,
+    text: text ?? this.text,
+    category: category ?? this.category,
+    pinned: pinned ?? this.pinned,
+    createdAt: createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'text': text,
+    'category': category.name,
+    'pinned': pinned,
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory MemoryEntry.fromJson(Map<String, dynamic> json) {
+    final DateTime now = DateTime.now();
+    final DateTime created =
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? now;
+    return MemoryEntry(
+      id: json['id'] as String? ?? newId(),
+      text: clampText(json['text'] as String? ?? ''),
+      category: memoryCategoryFromName(json['category'] as String?),
+      pinned: json['pinned'] as bool? ?? false,
+      createdAt: created,
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? created,
+    );
+  }
+}
+
+/// Lifecycle status of a [GoalEntry] (v1.50.0, MAgents goals).
+enum GoalStatus { active, done, dropped }
+
+/// Parses a persisted [GoalStatus] name; unknown values degrade to
+/// [GoalStatus.active].
+GoalStatus goalStatusFromName(String? name) {
+  for (final GoalStatus s in GoalStatus.values) {
+    if (s.name == name) return s;
+  }
+  return GoalStatus.active;
+}
+
+/// One user goal tracked across chats (v1.50.0). Progress is 0..100.
+class GoalEntry {
+  const GoalEntry({
+    required this.id,
+    required this.title,
+    this.detail = '',
+    this.status = GoalStatus.active,
+    this.progress = 0,
+    this.dueDate,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  final String id;
+  final String title;
+  final String detail;
+  final GoalStatus status;
+  final int progress;
+  final DateTime? dueDate;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  static int clampProgress(Object? value) {
+    final int parsed = value is int ? value : int.tryParse('$value') ?? 0;
+    if (parsed < 0) return 0;
+    if (parsed > 100) return 100;
+    return parsed;
+  }
+
+  /// Active goal whose deadline has passed at [now].
+  bool isOverdue(DateTime now) =>
+      status == GoalStatus.active &&
+      dueDate != null &&
+      dueDate!.isBefore(now);
+
+  /// Active goal due within the next 48 hours (but not yet overdue).
+  bool isDueSoon(DateTime now) {
+    if (status != GoalStatus.active || dueDate == null) return false;
+    if (dueDate!.isBefore(now)) return false;
+    return dueDate!.difference(now) <= const Duration(hours: 48);
+  }
+
+  GoalEntry copyWith({
+    String? title,
+    String? detail,
+    GoalStatus? status,
+    int? progress,
+    DateTime? dueDate,
+    bool clearDueDate = false,
+    DateTime? updatedAt,
+  }) => GoalEntry(
+    id: id,
+    title: title ?? this.title,
+    detail: detail ?? this.detail,
+    status: status ?? this.status,
+    progress: progress ?? this.progress,
+    dueDate: clearDueDate ? null : (dueDate ?? this.dueDate),
+    createdAt: createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+
+  Map<String, dynamic> toJson() => <String, dynamic>{
+    'id': id,
+    'title': title,
+    'detail': detail,
+    'status': status.name,
+    'progress': progress,
+    if (dueDate != null) 'dueDate': dueDate!.toIso8601String(),
+    'createdAt': createdAt.toIso8601String(),
+    'updatedAt': updatedAt.toIso8601String(),
+  };
+
+  factory GoalEntry.fromJson(Map<String, dynamic> json) {
+    final DateTime now = DateTime.now();
+    final DateTime created =
+        DateTime.tryParse(json['createdAt'] as String? ?? '') ?? now;
+    return GoalEntry(
+      id: json['id'] as String? ?? newId(),
+      title: json['title'] as String? ?? 'Goal',
+      detail: json['detail'] as String? ?? '',
+      status: goalStatusFromName(json['status'] as String?),
+      progress: clampProgress(json['progress']),
+      dueDate: DateTime.tryParse(json['dueDate'] as String? ?? ''),
+      createdAt: created,
+      updatedAt:
+          DateTime.tryParse(json['updatedAt'] as String? ?? '') ?? created,
+    );
+  }
+}

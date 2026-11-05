@@ -2765,6 +2765,44 @@ class ChatController extends Notifier<ChatState> {
     } catch (_) {
       // Context store failure must never block a chat request.
     }
+    // v1.50.0 — long-term memory + active goals (Muse-style).
+    // Injected ONLY when non-empty, so empty stores keep the legacy
+    // prompt byte-for-byte and legacy tests/behavior are untouched.
+    try {
+      String lastUser = '';
+      for (final ChatMessage m in run.messages.reversed) {
+        if (m.role == Role.user && m.content.trim().isNotEmpty) {
+          lastUser = m.content;
+          break;
+        }
+      }
+      final String memorySummary = ref
+          .read(memoryServiceProvider)
+          .promptSummary(lastUser);
+      if (memorySummary.isNotEmpty) {
+        if (content.isNotEmpty) content.writeln();
+        content
+          ..writeln()
+          ..writeln(
+            '# Long-term memory (saved across chats — treat as user facts)',
+          )
+          ..write(memorySummary);
+      }
+    } catch (_) {
+      // Memory store failure must never block a chat request.
+    }
+    try {
+      final String goalSummary = ref.read(goalServiceProvider).promptSummary();
+      if (goalSummary.isNotEmpty) {
+        if (content.isNotEmpty) content.writeln();
+        content
+          ..writeln()
+          ..writeln('# Active goals (the user is working toward these)')
+          ..write(goalSummary);
+      }
+    } catch (_) {
+      // Goal store failure must never block a chat request.
+    }
     return <String, dynamic>{'role': 'system', 'content': content.toString()};
   }
 

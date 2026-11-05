@@ -16,6 +16,8 @@ import '../theme.dart';
 import '../widgets/app_message.dart';
 import 'about_screen.dart';
 import 'context_screen.dart';
+import 'goals_screen.dart';
+import 'memory_screen.dart';
 import 'files_screen.dart';
 import 'help_screen.dart';
 import 'node_screen.dart';
@@ -750,6 +752,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     builder: (_) => const ContextScreen(),
                   ),
                 ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // -- Memory & Goals (v1.50.0) ----------------------------------
+            _sectionTitle('Memory & Goals'),
+            _card(
+              child: Column(
+                children: <Widget>[
+                  ListTile(
+                    key: const Key('memory-manager-tile'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.psychology_rounded),
+                    title: const Text('Memory'),
+                    subtitle: Text(
+                      'Long-term facts the agent recalls across chats',
+                      style: TextStyle(fontSize: 12, color: palette.muted),
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const MemoryScreen(),
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    key: const Key('goals-manager-tile'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.flag_rounded),
+                    title: const Text('Goals'),
+                    subtitle: Text(
+                      'Your goals and their progress',
+                      style: TextStyle(fontSize: 12, color: palette.muted),
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const GoalsScreen(),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 16),

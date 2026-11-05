@@ -20,6 +20,10 @@ import 'services/browser_automation.dart';
 import 'services/browser_session_isolation.dart';
 import 'services/chat_store.dart';
 import 'services/context_repository.dart';
+import 'services/goal_repository.dart';
+import 'services/goal_service.dart';
+import 'services/memory_repository.dart';
+import 'services/memory_service.dart';
 import 'services/device_export.dart';
 import 'services/device_shell.dart';
 import 'services/ip_guard.dart';
@@ -64,6 +68,26 @@ final promptRepositoryProvider = Provider<PromptRepository>((ref) {
     'promptRepositoryProvider must be overridden in main()',
   );
 });
+
+/// Must be overridden in main() with a real repository (v1.50.0).
+final memoryRepositoryProvider = Provider<MemoryRepository>((ref) {
+  throw UnimplementedError(
+    'memoryRepositoryProvider must be overridden in main()',
+  );
+});
+
+/// Must be overridden in main() with a real repository (v1.50.0).
+final goalRepositoryProvider = Provider<GoalRepository>((ref) {
+  throw UnimplementedError('goalRepositoryProvider must be overridden in main()');
+});
+
+final memoryServiceProvider = Provider<MemoryService>(
+  (ref) => MemoryService(ref.watch(memoryRepositoryProvider)),
+);
+
+final goalServiceProvider = Provider<GoalService>(
+  (ref) => GoalService(ref.watch(goalRepositoryProvider)),
+);
 
 final settingsProvider = NotifierProvider<SettingsController, AppSettings>(
   SettingsController.new,
@@ -487,6 +511,8 @@ final toolExecutorProvider = Provider<ToolExecutor>((ref) {
     // root availability, so the agent can confirm what the user claims
     // instead of trusting a blind "yes".
     deviceStatus: () => ref.read(deviceShellServiceProvider),
+    memory: ref.watch(memoryServiceProvider),
+    goals: ref.watch(goalServiceProvider),
     // v1.38.1 — SKILL.md files bundled with the app binary behind
     // `skill_install builtin:<name>` (no network needed).
     bundledSkills: bundledSkills,
@@ -553,6 +579,14 @@ final contextListProvider = FutureProvider<List<ContextEntry>>(
 );
 
 /// Prompt Library entries (reactive across screens).
+final memoryListProvider = FutureProvider<List<MemoryEntry>>(
+  (ref) async => ref.watch(memoryRepositoryProvider).load(),
+);
+
+final goalListProvider = FutureProvider<List<GoalEntry>>(
+  (ref) async => ref.watch(goalRepositoryProvider).load(),
+);
+
 final promptListProvider = FutureProvider<List<PromptEntry>>(
   (ref) => ref.watch(promptRepositoryProvider).load(),
 );

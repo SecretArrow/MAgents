@@ -25,6 +25,8 @@ Guidelines:
 - When the user attaches files, images travel as vision parts and text files are inlined; reference attachments by name.
 - Skills (v1.38.0): installed skills EXTEND your capabilities and persist across ALL chats (install once, use everywhere). List them with skill_list; read a skill's full manual with skill_info before first use and follow it exactly; run its scripts with skill_run. Install new skills from natural requests OR CLI-style commands — when the user says "install the X skill" or pastes something like "npx skills add owner/repo/path/to/skill", call skill_install with the same source (owner/repo[/path][@branch]); for the Web3 wallet workflows use the skills bundled with this app (builtin:web3-wallet-basics, builtin:binance-agentic-wallet). After installing: report what was installed, list its required config fields, and verify the install by reading skill_info. If a skill needs config values (API keys, wallet settings), collect them from the user and store them with skill_config — values are saved on-device and never echoed into the conversation. Skill scripts run in the embedded JS runtime with network access (fetch), file access and npm packages; they are NOT a full Node.js or terminal — native binaries, arbitrary CLI tools and non-JS scripts are unsupported, and you must say so honestly instead of pretending. Wallet skills (SKILL.md declares wallet: true) are value-moving: the app itself requires the user to approve every skill_run on one, so never claim a transaction happened unless the run returned a success result.
 - Security & money (CRITICAL): NEVER ask for a seed phrase, recovery phrase or private key in chat, and never store one in plain conversation — if a skill needs secrets, they go through skill_config secret fields. Use only the skill's official authentication flow (API keys, OAuth links, wallet-connect URLs the user opens themselves). Login or wallet connection is NEVER permission to transact: before ANY irreversible action — sending assets, swapping, selling/minting an NFT, token approvals, changing spending limits — call request_confirmation with a COMPLETE summary (network, asset, amount, destination address, estimated fee, what the user gets) and proceed ONLY when the user approves. Denials are final: do not retry the same action. If a capability is unsupported by the environment or the skill fails, report exactly what happened — never claim an action succeeded without evidence from a tool result.
+- Long-term memory (v1.50.0): you have a persistent memory shared across ALL chats. Save durable facts, preferences and instructions with memory_save (do not save secrets or one-off details), recall them with memory_recall/memory_list, and remove stale ones with memory_forget. Relevant pinned/relevant memories and the user's active goals are already included in the system prompt when they exist.
+- Goals (v1.50.0): track the user's goals with goal_create/goal_list/goal_update/goal_complete and keep their progress honest (only mark progress you verified).
 - When you have enough information, stop calling tools and write the final answer in Markdown.
 - Always answer in the same language the user writes in.
 ''';
@@ -646,5 +648,129 @@ List<Map<String, dynamic>> buildAgentTools({
       },
     },
     <String>['title', 'details'],
+  ),
+  _fn(
+    'memory_save',
+    'Save a durable fact, preference, person note, project note or standing instruction into long-term memory (shared across all chats). Near-duplicates are ignored. Do NOT save secrets, passwords or one-off task details.',
+    <String, dynamic>{
+      'text': <String, dynamic>{
+        'type': 'string',
+        'description': 'The memory text, e.g. "User prefers answers in Bahasa Indonesia"',
+      },
+      'category': <String, dynamic>{
+        'type': 'string',
+        'enum': <String>['fact', 'preference', 'person', 'project', 'instruction'],
+        'description': 'Memory category (default fact)',
+      },
+      'pinned': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'Pin so this memory is always surfaced (default false)',
+      },
+    },
+    <String>['text'],
+  ),
+  _fn(
+    'memory_recall',
+    'Search long-term memory for entries relevant to a query (token-overlap ranking, pinned first). Use when the user refers to earlier facts or preferences.',
+    <String, dynamic>{
+      'query': <String, dynamic>{
+        'type': 'string',
+        'description': 'Search query',
+      },
+    },
+    <String>['query'],
+  ),
+  _fn(
+    'memory_list',
+    'List long-term memories (most relevant/recent first). Optional category filter.',
+    <String, dynamic>{
+      'category': <String, dynamic>{
+        'type': 'string',
+        'enum': <String>['fact', 'preference', 'person', 'project', 'instruction'],
+        'description': 'Optional category filter',
+      },
+    },
+    const <String>[],
+  ),
+  _fn(
+    'memory_forget',
+    'Delete ONE long-term memory by its id (ids come from memory_list/memory_recall).',
+    <String, dynamic>{
+      'id': <String, dynamic>{
+        'type': 'string',
+        'description': 'Memory id to delete',
+      },
+    },
+    <String>['id'],
+  ),
+  _fn(
+    'goal_create',
+    'Create a user goal (title, optional detail, progress 0-100, optional due date YYYY-MM-DD). Goals persist across chats and active goals appear in the system prompt.',
+    <String, dynamic>{
+      'title': <String, dynamic>{
+        'type': 'string',
+        'description': 'Goal title',
+      },
+      'detail': <String, dynamic>{
+        'type': 'string',
+        'description': 'Optional detail',
+      },
+      'due_date': <String, dynamic>{
+        'type': 'string',
+        'description': 'Optional due date, YYYY-MM-DD',
+      },
+      'progress': <String, dynamic>{
+        'type': 'integer',
+        'description': 'Initial progress 0-100 (default 0)',
+      },
+    },
+    <String>['title'],
+  ),
+  _fn(
+    'goal_list',
+    'List the user goals. By default only active goals; pass status to filter (active|done|dropped) or all=true for everything.',
+    <String, dynamic>{
+      'status': <String, dynamic>{
+        'type': 'string',
+        'enum': <String>['active', 'done', 'dropped'],
+        'description': 'Optional status filter',
+      },
+      'all': <String, dynamic>{
+        'type': 'boolean',
+        'description': 'List every goal regardless of status',
+      },
+    },
+    const <String>[],
+  ),
+  _fn(
+    'goal_update',
+    'Update ONE goal by id: progress (0-100) and/or status (active|done|dropped) and/or title/detail/due_date.',
+    <String, dynamic>{
+      'id': <String, dynamic>{'type': 'string', 'description': 'Goal id'},
+      'progress': <String, dynamic>{
+        'type': 'integer',
+        'description': 'New progress 0-100',
+      },
+      'status': <String, dynamic>{
+        'type': 'string',
+        'enum': <String>['active', 'done', 'dropped'],
+        'description': 'New status',
+      },
+      'title': <String, dynamic>{'type': 'string', 'description': 'New title'},
+      'detail': <String, dynamic>{'type': 'string', 'description': 'New detail'},
+      'due_date': <String, dynamic>{
+        'type': 'string',
+        'description': 'New due date, YYYY-MM-DD',
+      },
+    },
+    <String>['id'],
+  ),
+  _fn(
+    'goal_complete',
+    'Mark ONE goal as done (status done, progress 100) by its id.',
+    <String, dynamic>{
+      'id': <String, dynamic>{'type': 'string', 'description': 'Goal id'},
+    },
+    <String>['id'],
   ),
 ];

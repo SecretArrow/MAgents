@@ -9,6 +9,8 @@ import 'di.dart';
 import 'l10n/app_strings.dart';
 import 'models/models.dart';
 import 'services/context_repository.dart';
+import 'services/goal_repository.dart';
+import 'services/memory_repository.dart';
 import 'services/prompt_repository.dart';
 import 'services/settings_repository.dart';
 import 'ui/lock_gate.dart';
@@ -31,6 +33,9 @@ Future<void> main() async {
       await PrefsSettingsRepository.create();
   final PrefsContextRepository contextRepo =
       await PrefsContextRepository.create();
+  final PrefsMemoryRepository memoryRepo =
+      await PrefsMemoryRepository.create();
+  final PrefsGoalRepository goalRepo = await PrefsGoalRepository.create();
   final FilePromptRepository promptRepo = FilePromptRepository(
     resolveBaseDir: getApplicationDocumentsDirectory,
   );
@@ -44,6 +49,8 @@ Future<void> main() async {
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
         contextRepositoryProvider.overrideWithValue(contextRepo),
         promptRepositoryProvider.overrideWithValue(promptRepo),
+        memoryRepositoryProvider.overrideWithValue(memoryRepo),
+        goalRepositoryProvider.overrideWithValue(goalRepo),
         appLockPrefsProvider.overrideWithValue(appLockPrefs),
         ipMemoPrefsProvider.overrideWithValue(ipMemoPrefs),
       ],

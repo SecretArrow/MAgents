@@ -12,6 +12,8 @@ import 'package:magents/services/backup_service.dart';
 import 'package:magents/services/browser_automation.dart';
 import 'package:magents/services/chat_store.dart';
 import 'package:magents/services/context_repository.dart';
+import 'package:magents/services/goal_repository.dart';
+import 'package:magents/services/memory_repository.dart';
 import 'package:magents/services/ip_guard.dart';
 import 'package:magents/services/js_runtime.dart';
 import 'package:magents/services/llm_client.dart';
@@ -644,6 +646,8 @@ List<Override> testOverrides({
   bool writeScreenshots = true,
   List<ContextEntry>? contexts,
   List<PromptEntry>? prompts,
+  List<MemoryEntry>? memories,
+  List<GoalEntry>? goals,
   ScriptedJsRuntime? js,
 }) => <Override>[
   settingsRepositoryProvider.overrideWithValue(
@@ -653,6 +657,10 @@ List<Override> testOverrides({
     MemoryContextRepository(contexts),
   ),
   promptRepositoryProvider.overrideWithValue(MemoryPromptRepository(prompts)),
+  memoryRepositoryProvider.overrideWithValue(
+    InMemoryMemoryRepository(memories),
+  ),
+  goalRepositoryProvider.overrideWithValue(InMemoryGoalRepository(goals)),
   documentsDirProvider.overrideWithValue(() async => dir),
   if (llm != null) llmClientProvider.overrideWithValue(llm),
   // Widget tests run in an async test zone: awaiting the real method
