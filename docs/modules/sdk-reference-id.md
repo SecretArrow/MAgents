@@ -1,7 +1,7 @@
-# ZAgents Module SDK (v1.31.0)
+# MAgents Module SDK (v1.31.0)
 
 Panduan resmi untuk membuat **modul chat**: paket JavaScript yang berjalan
-secara native di dalam sesi chat ZAgents, terisolasi per chat seperti
+secara native di dalam sesi chat MAgents, terisolasi per chat seperti
 jendela privat browser.
 
 Lokasi berkas di repositori ini:

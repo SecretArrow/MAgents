@@ -1,6 +1,6 @@
 # Module Documentation
 
-Official documentation for **ZAgents chat modules** (plugins).
+Official documentation for **MAgents chat modules** (plugins).
 
 | Document | Language | Contents |
 |---|---|---|
