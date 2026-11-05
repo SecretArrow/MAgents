@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -41,12 +43,25 @@ class _LockGateState extends ConsumerState<LockGate>
       }
       ref.read(appInForegroundProvider.notifier).state = true;
       _openPendingSession();
+      _checkDueJobs();
     });
   }
 
   /// Deep link from a "task finished" notification (v1.18.0): the tap
   /// carried the session id; open that conversation beneath the lock
   /// surface so it is ready when the user unlocks.
+
+  /// CronJobs catch-up (v1.51.0): on start and on every resume, fire
+  /// any jobs that came due while the app was closed. Best-effort and
+  /// fully guarded — a storage hiccup must never break app start.
+  void _checkDueJobs() {
+    try {
+      unawaited(ref.read(scheduledJobRunnerProvider).checkAll());
+    } catch (_) {
+      // Runner unavailable (some tests): jobs simply do not fire.
+    }
+  }
+
   Future<void> _openPendingSession() async {
     try {
       final String? pending = await ref
@@ -87,6 +102,7 @@ class _LockGateState extends ConsumerState<LockGate>
       // parked the session id; drain it now so the tap opens THAT chat.
       // (At cold start the same drain runs from initState.)
       _openPendingSession();
+      _checkDueJobs();
     }
   }
 

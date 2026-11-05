@@ -27,6 +27,8 @@ Guidelines:
 - Security & money (CRITICAL): NEVER ask for a seed phrase, recovery phrase or private key in chat, and never store one in plain conversation — if a skill needs secrets, they go through skill_config secret fields. Use only the skill's official authentication flow (API keys, OAuth links, wallet-connect URLs the user opens themselves). Login or wallet connection is NEVER permission to transact: before ANY irreversible action — sending assets, swapping, selling/minting an NFT, token approvals, changing spending limits — call request_confirmation with a COMPLETE summary (network, asset, amount, destination address, estimated fee, what the user gets) and proceed ONLY when the user approves. Denials are final: do not retry the same action. If a capability is unsupported by the environment or the skill fails, report exactly what happened — never claim an action succeeded without evidence from a tool result.
 - Long-term memory (v1.50.0): you have a persistent memory scoped to THIS chat only (per-chat isolation: other chats have their own separate memories and you can never access them). Save durable facts, preferences and instructions for THIS conversation with memory_save (do not save secrets or one-off details), recall them with memory_recall/memory_list, and remove stale ones with memory_forget. Relevant pinned/relevant memories of THIS chat and THIS chat's active goals are already included in the system prompt when they exist.
 - Goals (v1.50.0): track the user's goals with goal_create/goal_list/goal_update/goal_complete and keep their progress honest (only mark progress you verified).
+- Reminders & CronJobs (v1.51.0, this chat only): reminder_create/reminder_list/reminder_complete for one-off or repeating reminders; cron_create/cron_list/cron_update/cron_delete for scheduled jobs that can post a local notification and/or auto-send a Telegram message (many jobs per chat allowed). Jobs fire best-effort while the app runs or when it is reopened.
+- Skills (v1.51.0): when you work out a reusable procedure in a chat, offer to persist it with skill_save so future chats can reuse it.
 - When you have enough information, stop calling tools and write the final answer in Markdown.
 - Always answer in the same language the user writes in.
 ''';
@@ -715,6 +717,80 @@ List<Map<String, dynamic>> buildAgentTools({
       },
     },
     <String>['id'],
+  ),
+  _fn(
+    'reminder_create',
+    'Create a reminder in THIS chat only (per-chat isolation). dueAt is an ISO-8601 local datetime; repeat: none|daily|weekly.',
+    <String, dynamic>{
+      'title': <String, dynamic>{'type': 'string', 'description': 'Reminder title'},
+      'dueAt': <String, dynamic>{'type': 'string', 'description': 'Due datetime, ISO-8601'},
+      'detail': <String, dynamic>{'type': 'string', 'description': 'Optional detail'},
+      'repeat': <String, dynamic>{'type': 'string', 'description': 'none|daily|weekly'},
+    },
+    <String>['title', 'dueAt'],
+  ),
+  _fn(
+    'reminder_list',
+    'List THIS chat\'s reminders, open ones first.',
+    <String, dynamic>{},
+    <String>[],
+  ),
+  _fn(
+    'reminder_complete',
+    'Mark a reminder of THIS chat done; a repeating reminder rolls to its next occurrence instead.',
+    <String, dynamic>{
+      'id': <String, dynamic>{'type': 'string', 'description': 'Reminder id from reminder_list'},
+    },
+    <String>['id'],
+  ),
+  _fn(
+    'cron_create',
+    'Create a scheduled job in THIS chat only (a chat can have MANY jobs - each call adds one). kind: once|daily|weekly|interval; action: notify|telegram|both. For once pass runAt (ISO-8601); for daily/weekly pass hour+minute (weekly also weekday 1=Mon..7=Sun); for interval pass intervalMinutes.',
+    <String, dynamic>{
+      'title': <String, dynamic>{'type': 'string', 'description': 'Job title'},
+      'message': <String, dynamic>{'type': 'string', 'description': 'Text shown in the notification / sent to Telegram'},
+      'kind': <String, dynamic>{'type': 'string', 'description': 'once|daily|weekly|interval'},
+      'action': <String, dynamic>{'type': 'string', 'description': 'notify|telegram|both'},
+      'runAt': <String, dynamic>{'type': 'string', 'description': 'ISO-8601 datetime (kind=once)'},
+      'hour': <String, dynamic>{'type': 'integer', 'description': 'Hour 0-23 (daily/weekly)'},
+      'minute': <String, dynamic>{'type': 'integer', 'description': 'Minute 0-59 (daily/weekly)'},
+      'weekday': <String, dynamic>{'type': 'integer', 'description': 'Weekday 1-7 (weekly)'},
+      'intervalMinutes': <String, dynamic>{'type': 'integer', 'description': 'Interval in minutes (interval)'},
+    },
+    <String>['title', 'message', 'kind'],
+  ),
+  _fn(
+    'cron_list',
+    'List ALL scheduled jobs of THIS chat.',
+    <String, dynamic>{},
+    <String>[],
+  ),
+  _fn(
+    'cron_update',
+    'Enable or disable a scheduled job of THIS chat.',
+    <String, dynamic>{
+      'id': <String, dynamic>{'type': 'string', 'description': 'Job id from cron_list'},
+      'enabled': <String, dynamic>{'type': 'boolean', 'description': 'New enabled state'},
+    },
+    <String>['id', 'enabled'],
+  ),
+  _fn(
+    'cron_delete',
+    'Delete a scheduled job of THIS chat.',
+    <String, dynamic>{
+      'id': <String, dynamic>{'type': 'string', 'description': 'Job id from cron_list'},
+    },
+    <String>['id'],
+  ),
+  _fn(
+    'skill_save',
+    'Save a NEW reusable skill (playbook) from this chat: a name, a short description of when to use it, and the instruction body. It appears in the Skills screen like any installed skill.',
+    <String, dynamic>{
+      'name': <String, dynamic>{'type': 'string', 'description': 'Skill name (letters, digits, dashes)'},
+      'description': <String, dynamic>{'type': 'string', 'description': 'When the agent should use this skill'},
+      'instructions': <String, dynamic>{'type': 'string', 'description': 'The skill instructions (markdown)'},
+    },
+    <String>['name', 'description', 'instructions'],
   ),
   _fn(
     'goal_create',

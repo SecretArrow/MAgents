@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'models/models.dart';
 import 'services/agent_composer.dart';
 import 'services/agent_controller.dart';
+import 'services/background_service.dart';
 import 'services/agent_polisher.dart';
 import 'services/agentrouter_client.dart';
 import 'services/app_lock_service.dart';
@@ -24,6 +25,13 @@ import 'services/goal_repository.dart';
 import 'services/goal_service.dart';
 import 'services/memory_repository.dart';
 import 'services/memory_service.dart';
+import 'services/briefing_service.dart';
+import 'services/reminder_repository.dart';
+import 'services/reminder_service.dart';
+import 'services/scheduled_job_repository.dart';
+import 'services/scheduled_job_runner.dart';
+import 'services/scheduled_job_service.dart';
+import 'services/telegram_sender.dart';
 import 'services/device_export.dart';
 import 'services/device_shell.dart';
 import 'services/ip_guard.dart';
@@ -89,6 +97,63 @@ final memoryServiceProvider = Provider<MemoryService>(
 
 final goalServiceProvider = Provider<GoalService>(
   (ref) => GoalService(ref.watch(goalRepositoryProvider)),
+);
+
+/// Must be overridden in main() with a real repository (v1.51.0).
+final reminderRepositoryProvider = Provider<ReminderRepository>((ref) {
+  throw UnimplementedError(
+    'reminderRepositoryProvider must be overridden in main()',
+  );
+});
+
+/// Must be overridden in main() with a real repository (v1.51.0).
+final scheduledJobRepositoryProvider = Provider<ScheduledJobRepository>((
+  ref,
+) {
+  throw UnimplementedError(
+    'scheduledJobRepositoryProvider must be overridden in main()',
+  );
+});
+
+final reminderServiceProvider = Provider<ReminderService>(
+  (ref) => ReminderService(ref.watch(reminderRepositoryProvider)),
+);
+
+final scheduledJobServiceProvider = Provider<ScheduledJobService>(
+  (ref) => ScheduledJobService(ref.watch(scheduledJobRepositoryProvider)),
+);
+
+final telegramSenderProvider = Provider<TelegramSender>(
+  (ref) => TelegramSender(),
+);
+
+/// Must be overridden in main() (SecretBox + prefs backed).
+final telegramConfigStoreProvider = Provider<TelegramConfigStore>((ref) {
+  throw UnimplementedError(
+    'telegramConfigStoreProvider must be overridden in main()',
+  );
+});
+
+final scheduledJobRunnerProvider = Provider<ScheduledJobRunner>(
+  (ref) => ScheduledJobRunner(
+    jobs: ref.watch(scheduledJobServiceProvider),
+    notifications: ref.watch(backgroundRunServiceProvider),
+    telegram: ref.watch(telegramSenderProvider),
+    configStore: ref.watch(telegramConfigStoreProvider),
+    listSessionIds: () async => <String>[
+      for (final s in await ref.read(chatStoreProvider).listSummaries())
+        s.id,
+    ],
+  ),
+);
+
+final briefingServiceProvider = Provider<BriefingService>(
+  (ref) => BriefingService(
+    goals: ref.watch(goalServiceProvider),
+    reminders: ref.watch(reminderServiceProvider),
+    memory: ref.watch(memoryServiceProvider),
+    jobs: ref.watch(scheduledJobServiceProvider),
+  ),
 );
 
 final settingsProvider = NotifierProvider<SettingsController, AppSettings>(
@@ -515,6 +580,8 @@ final toolExecutorProvider = Provider<ToolExecutor>((ref) {
     deviceStatus: () => ref.read(deviceShellServiceProvider),
     memory: ref.watch(memoryServiceProvider),
     goals: ref.watch(goalServiceProvider),
+    reminders: ref.watch(reminderServiceProvider),
+    cronJobs: ref.watch(scheduledJobServiceProvider),
     // v1.38.1 — SKILL.md files bundled with the app binary behind
     // `skill_install builtin:<name>` (no network needed).
     bundledSkills: bundledSkills,
@@ -588,6 +655,18 @@ final memoryListProvider = FutureProvider.family<List<MemoryEntry>, String>(
 final goalListProvider = FutureProvider.family<List<GoalEntry>, String>(
   (ref, sessionId) async => ref.watch(goalRepositoryProvider).load(sessionId),
 );
+
+final reminderListProvider =
+    FutureProvider.family<List<ReminderEntry>, String>(
+      (ref, sessionId) async =>
+          ref.watch(reminderServiceProvider).list(sessionId),
+    );
+
+final scheduledJobListProvider =
+    FutureProvider.family<List<ScheduledJob>, String>(
+      (ref, sessionId) async =>
+          ref.watch(scheduledJobServiceProvider).list(sessionId),
+    );
 
 final promptListProvider = FutureProvider<List<PromptEntry>>(
   (ref) => ref.watch(promptRepositoryProvider).load(),

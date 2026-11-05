@@ -5,6 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'dart:async';
+
 import 'di.dart';
 import 'l10n/app_strings.dart';
 import 'models/models.dart';
@@ -12,6 +14,13 @@ import 'services/context_repository.dart';
 import 'services/goal_repository.dart';
 import 'services/memory_repository.dart';
 import 'services/prompt_repository.dart';
+import 'services/background_service.dart';
+import 'services/chat_store.dart';
+import 'services/reminder_repository.dart';
+import 'services/scheduled_job_repository.dart';
+import 'services/scheduled_job_runner.dart';
+import 'services/scheduled_job_service.dart';
+
 import 'services/settings_repository.dart';
 import 'ui/lock_gate.dart';
 import 'ui/screens/home_shell.dart';
@@ -35,6 +44,10 @@ Future<void> main() async {
       await PrefsContextRepository.create();
   final PrefsMemoryRepository memoryRepo = await PrefsMemoryRepository.create();
   final PrefsGoalRepository goalRepo = await PrefsGoalRepository.create();
+  final PrefsReminderRepository reminderRepo =
+      await PrefsReminderRepository.create();
+  final PrefsScheduledJobRepository jobRepo =
+      await PrefsScheduledJobRepository.create();
   final FilePromptRepository promptRepo = FilePromptRepository(
     resolveBaseDir: getApplicationDocumentsDirectory,
   );
@@ -50,12 +63,40 @@ Future<void> main() async {
         promptRepositoryProvider.overrideWithValue(promptRepo),
         memoryRepositoryProvider.overrideWithValue(memoryRepo),
         goalRepositoryProvider.overrideWithValue(goalRepo),
+        reminderRepositoryProvider.overrideWithValue(reminderRepo),
+        scheduledJobRepositoryProvider.overrideWithValue(jobRepo),
+        telegramConfigStoreProvider.overrideWithValue(
+          PrefsTelegramConfigStore(
+            secrets: const FlutterSecretBox(),
+            prefs: appLockPrefs,
+          ),
+        ),
         appLockPrefsProvider.overrideWithValue(appLockPrefs),
         ipMemoPrefsProvider.overrideWithValue(ipMemoPrefs),
       ],
       child: const MAgentsApp(),
     ),
   );
+  // CronJobs engine (v1.51.0): best-effort — a minute timer while the
+  // process lives plus this start-up catch-up pass. Started OUTSIDE
+  // the widget tree on purpose (no pending-timer hazards in tests,
+  // which never call main()).
+  final ChatStore bootStore = ChatStore(
+    resolveBaseDir: getApplicationDocumentsDirectory,
+  );
+  final ScheduledJobRunner runner = ScheduledJobRunner(
+    jobs: ScheduledJobService(jobRepo),
+    notifications: BackgroundRunService(),
+    configStore: PrefsTelegramConfigStore(
+      secrets: const FlutterSecretBox(),
+      prefs: appLockPrefs,
+    ),
+    listSessionIds: () async => <String>[
+      for (final ChatSummary s in await bootStore.listSummaries()) s.id,
+    ],
+  );
+  runner.start();
+  unawaited(runner.checkAll());
 }
 
 /// v1.49.0 — keeps EVERY screen, dialog, bottom sheet, drawer and

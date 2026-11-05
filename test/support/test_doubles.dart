@@ -18,6 +18,9 @@ import 'package:magents/services/ip_guard.dart';
 import 'package:magents/services/js_runtime.dart';
 import 'package:magents/services/llm_client.dart';
 import 'package:magents/services/prompt_repository.dart';
+import 'package:magents/services/reminder_repository.dart';
+import 'package:magents/services/scheduled_job_repository.dart';
+import 'package:magents/services/scheduled_job_runner.dart';
 import 'package:magents/services/settings_repository.dart';
 
 /// Minimal valid 1x1 PNG used as scripted screenshot bytes.
@@ -648,6 +651,9 @@ List<Override> testOverrides({
   List<PromptEntry>? prompts,
   Map<String, List<MemoryEntry>>? memoriesBySession,
   Map<String, List<GoalEntry>>? goalsBySession,
+  Map<String, List<ReminderEntry>>? remindersBySession,
+  Map<String, List<ScheduledJob>>? jobsBySession,
+  TelegramConfig? telegramConfig,
   ScriptedJsRuntime? js,
 }) => <Override>[
   settingsRepositoryProvider.overrideWithValue(
@@ -662,6 +668,15 @@ List<Override> testOverrides({
   ),
   goalRepositoryProvider.overrideWithValue(
     InMemoryGoalRepository(goalsBySession),
+  ),
+  reminderRepositoryProvider.overrideWithValue(
+    InMemoryReminderRepository(remindersBySession),
+  ),
+  scheduledJobRepositoryProvider.overrideWithValue(
+    InMemoryScheduledJobRepository(jobsBySession),
+  ),
+  telegramConfigStoreProvider.overrideWithValue(
+    MemoryTelegramConfigStore(telegramConfig ?? const TelegramConfig()),
   ),
   documentsDirProvider.overrideWithValue(() async => dir),
   if (llm != null) llmClientProvider.overrideWithValue(llm),

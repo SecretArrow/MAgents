@@ -701,6 +701,7 @@ class SkillRegistry {
   Future<SkillInstallReport> installBundled({
     required String bundledName,
     required String skillMd,
+    String? sourceOverride,
   }) async {
     final Directory staging = await _makeStagingDir();
     try {
@@ -735,7 +736,7 @@ class SkillRegistry {
           version: manifest.version,
           title: manifest.title,
           description: manifest.description,
-          source: 'builtin:$bundledName',
+          source: sourceOverride ?? 'builtin:$bundledName',
           permissions: manifest.permissions,
           requiresBins: manifest.requiresBins,
           wallet: manifest.wallet,
@@ -1467,6 +1468,42 @@ class SkillRegistry {
   /// Throws the same [SkillRegistryException]s as [installBundled]; a
   /// missing asset fails with a clear message instead of a raw loader
   /// error.
+  /// v1.51.0 — skill_save: saves a NEW reusable skill authored in chat
+  /// (name + description + instructions) as a real installed skill. The
+  /// generated SKILL.md passes the same validation as every other
+  /// install path; the recorded source is `chat:<name>`.
+  Future<SkillInstallReport> saveSkillFromChat({
+    required String name,
+    required String description,
+    required String instructions,
+  }) async {
+    final String safeName = sanitizeSkillName(name);
+    final String desc = description.replaceAll('\n', ' ').trim();
+    final String body = instructions.trim();
+    if (body.isEmpty) {
+      throw const SkillRegistryException(
+        'Skill instructions must not be empty.',
+      );
+    }
+    final String quotedDesc = desc
+        .replaceAll('\\', '\\\\')
+        .replaceAll('"', '\\"');
+    final String skillMd =
+        '---\n'
+        'name: $safeName\n'
+        'title: $safeName\n'
+        'description: "$quotedDesc"\n'
+        'version: "1.0"\n'
+        '---\n\n'
+        '# $safeName\n\n'
+        '$body\n';
+    return installBundled(
+      bundledName: safeName,
+      skillMd: skillMd,
+      sourceOverride: 'chat:$safeName',
+    );
+  }
+
   Future<SkillInstallReport> installBundledAsset(String bundledName) async {
     final String skillMd;
     try {

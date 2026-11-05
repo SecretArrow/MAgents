@@ -9,6 +9,8 @@ import 'file_system_service.dart';
 import 'js_runtime.dart';
 import 'goal_service.dart';
 import 'memory_service.dart';
+import 'reminder_service.dart';
+import 'scheduled_job_service.dart';
 import 'module_registry.dart';
 import 'module_runtime.dart';
 import 'npm_service.dart';
@@ -63,6 +65,8 @@ class ToolExecutor {
     this.bundledSkills,
     this.memory,
     this.goals,
+    this.reminders,
+    this.cronJobs,
   });
 
   final BrowserAutomation browser;
@@ -131,6 +135,14 @@ class ToolExecutor {
   /// User goals behind the `goal_*` tools (v1.50.0). Nullable for
   /// legacy tests; the tools degrade gracefully when absent.
   final GoalService? goals;
+
+  /// Reminders behind the `reminder_*` tools (v1.51.0). Nullable for
+  /// legacy tests; the tools degrade gracefully when absent.
+  final ReminderService? reminders;
+
+  /// Scheduled jobs behind the `cron_*` tools (v1.51.0). Nullable for
+  /// legacy tests; the tools degrade gracefully when absent.
+  final ScheduledJobService? cronJobs;
 
   /// Cached root-availability outcome (null = not probed yet).
   bool? _rootAvailable;
@@ -250,6 +262,22 @@ class ToolExecutor {
           return await _goalUpdate(args, sessionId);
         case 'goal_complete':
           return await _goalComplete(args, sessionId);
+        case 'reminder_create':
+          return await _reminderCreate(args, sessionId);
+        case 'reminder_list':
+          return _reminderList(args, sessionId);
+        case 'reminder_complete':
+          return await _reminderComplete(args, sessionId);
+        case 'cron_create':
+          return await _cronCreate(args, sessionId);
+        case 'cron_list':
+          return _cronList(args, sessionId);
+        case 'cron_update':
+          return await _cronUpdate(args, sessionId);
+        case 'cron_delete':
+          return await _cronDelete(args, sessionId);
+        case 'skill_save':
+          return await _skillSave(args);
         case 'device_status':
           return await _deviceStatus();
         default:
@@ -465,10 +493,271 @@ class ToolExecutor {
     );
   }
 
+  // -- Reminders (v1.51.0, per-chat) ------------------------------------
+
+  ReminderRepeat _reminderRepeat(Object? raw) => switch (raw
+      ?.toString()
+      .toLowerCase()) {
+    'daily' => ReminderRepeat.daily,
+    'weekly' => ReminderRepeat.weekly,
+    _ => ReminderRepeat.none,
+  };
+
+  Future<ToolResult> _reminderCreate(
+    Map<String, dynamic> args,
+    String? sessionId,
+  ) async {
+    final ReminderService? svc = reminders;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'reminder_create is unavailable in this build.',
+      );
+    }
+    final DateTime? dueAt = DateTime.tryParse(args['dueAt']?.toString() ?? '');
+    if (dueAt == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'reminder_create failed: dueAt must be ISO-8601.',
+      );
+    }
+    final ReminderEntry? entry = await svc.create(
+      sessionId ?? '',
+      args['title']?.toString() ?? '',
+      detail: args['detail']?.toString() ?? '',
+      dueAt: dueAt,
+      repeat: _reminderRepeat(args['repeat']),
+    );
+    if (entry == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'reminder_create failed: empty title.',
+      );
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: 'Reminder saved for this chat: ${entry.id} "${entry.title}" '
+          'due ${entry.dueAt.toIso8601String()} (repeat ${entry.repeat.name}).',
+    );
+  }
+
+  ToolResult _reminderList(Map<String, dynamic> args, String? sessionId) {
+    final ReminderService? svc = reminders;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'reminder_list is unavailable in this build.',
+      );
+    }
+    final List<ReminderEntry> entries = svc.list(sessionId ?? '');
+    if (entries.isEmpty) {
+      return const ToolResult(ok: true, llmOutput: 'No reminders in this chat.');
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: entries
+          .map(
+            (ReminderEntry e) =>
+                '- ${e.id} · ${e.dueAt.toIso8601String()} · '
+                '${e.repeat.name}${e.done ? ' · done' : ''} · ${e.title}',
+          )
+          .join('\n'),
+    );
+  }
+
+  Future<ToolResult> _reminderComplete(
+    Map<String, dynamic> args,
+    String? sessionId,
+  ) async {
+    final ReminderService? svc = reminders;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'reminder_complete is unavailable in this build.',
+      );
+    }
+    final ReminderEntry? entry = await svc.complete(
+      sessionId ?? '',
+      args['id']?.toString() ?? '',
+    );
+    if (entry == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'reminder_complete failed: unknown reminder id.',
+      );
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: entry.done
+          ? 'Reminder done: ${entry.id}.'
+          : 'Reminder rolled to next occurrence: ${entry.dueAt.toIso8601String()}.',
+    );
+  }
+
+  // -- CronJobs (v1.51.0, per-chat, multi-job) ---------------------------
+
+  JobScheduleKind _jobKind(Object? raw) => switch (raw
+      ?.toString()
+      .toLowerCase()) {
+    'daily' => JobScheduleKind.daily,
+    'weekly' => JobScheduleKind.weekly,
+    'interval' => JobScheduleKind.interval,
+    _ => JobScheduleKind.once,
+  };
+
+  JobAction _jobAction(Object? raw) => switch (raw?.toString().toLowerCase()) {
+    'telegram' => JobAction.telegram,
+    'both' => JobAction.both,
+    _ => JobAction.notify,
+  };
+
+  Future<ToolResult> _cronCreate(
+    Map<String, dynamic> args,
+    String? sessionId,
+  ) async {
+    final ScheduledJobService? svc = cronJobs;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'cron_create is unavailable in this build.',
+      );
+    }
+    final ScheduledJob? job = await svc.create(
+      sessionId ?? '',
+      title: args['title']?.toString() ?? '',
+      message: args['message']?.toString() ?? '',
+      kind: _jobKind(args['kind']),
+      action: _jobAction(args['action']),
+      runAt: DateTime.tryParse(args['runAt']?.toString() ?? ''),
+      hour: (args['hour'] as num?)?.toInt() ?? 9,
+      minute: (args['minute'] as num?)?.toInt() ?? 0,
+      weekday: (args['weekday'] as num?)?.toInt() ?? 1,
+      intervalMinutes: (args['intervalMinutes'] as num?)?.toInt() ?? 60,
+    );
+    if (job == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput:
+            'cron_create failed: empty title/message or the 100-job '
+            'per-chat limit was reached.',
+      );
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: 'Job created for this chat: ${job.id} "${job.title}" '
+          '(${job.kind.name}, ${job.action.name}) next run '
+          '${job.nextRunAt?.toIso8601String() ?? '—'}.',
+    );
+  }
+
+  ToolResult _cronList(Map<String, dynamic> args, String? sessionId) {
+    final ScheduledJobService? svc = cronJobs;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'cron_list is unavailable in this build.',
+      );
+    }
+    final List<ScheduledJob> jobs = svc.list(sessionId ?? '');
+    if (jobs.isEmpty) {
+      return const ToolResult(ok: true, llmOutput: 'No jobs in this chat.');
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: jobs
+          .map(
+            (ScheduledJob j) =>
+                '- ${j.id} · ${j.kind.name} · ${j.action.name} · '
+                '${j.enabled ? 'enabled' : 'disabled'} · next '
+                '${j.nextRunAt?.toIso8601String() ?? '—'} · ${j.title}',
+          )
+          .join('\n'),
+    );
+  }
+
+  Future<ToolResult> _cronUpdate(
+    Map<String, dynamic> args,
+    String? sessionId,
+  ) async {
+    final ScheduledJobService? svc = cronJobs;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'cron_update is unavailable in this build.',
+      );
+    }
+    final ScheduledJob? job = await svc.update(
+      sessionId ?? '',
+      args['id']?.toString() ?? '',
+      enabled: args['enabled'] == true,
+    );
+    if (job == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'cron_update failed: unknown job id.',
+      );
+    }
+    return ToolResult(
+      ok: true,
+      llmOutput: 'Job ${job.id} is now ${job.enabled ? 'enabled' : 'disabled'}.',
+    );
+  }
+
+  Future<ToolResult> _cronDelete(
+    Map<String, dynamic> args,
+    String? sessionId,
+  ) async {
+    final ScheduledJobService? svc = cronJobs;
+    if (svc == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'cron_delete is unavailable in this build.',
+      );
+    }
+    final bool removed = await svc.remove(
+      sessionId ?? '',
+      args['id']?.toString() ?? '',
+    );
+    return ToolResult(
+      ok: removed,
+      llmOutput: removed ? 'Job deleted.' : 'cron_delete failed: unknown job id.',
+    );
+  }
+
+  // -- skill_save (v1.51.0) ----------------------------------------------
+
+  Future<ToolResult> _skillSave(Map<String, dynamic> args) async {
+    final SkillRegistry? registry = skills;
+    if (registry == null) {
+      return const ToolResult(
+        ok: false,
+        llmOutput: 'skill_save is unavailable in this build.',
+      );
+    }
+    try {
+      final report = await registry.saveSkillFromChat(
+        name: args['name']?.toString() ?? '',
+        description: args['description']?.toString() ?? '',
+        instructions: args['instructions']?.toString() ?? '',
+      );
+      return ToolResult(
+        ok: true,
+        llmOutput: 'Skill saved: ${report.skill.name} '
+            '(${report.skill.source}). It is now available in the '
+            'Skills screen.',
+      );
+    } catch (e) {
+      return ToolResult(ok: false, llmOutput: 'skill_save failed: $e');
+    }
+  }
+
+>>>>>>> 73b2084
+
   Future<ToolResult> _goalCreate(
     Map<String, dynamic> args,
     String? sessionId,
   ) async {
+(feat(v1.51.0): cron engine (start/resume catch-up + 1-min timer, existing notify plumbing, tap opens owning chat), reminder/cron/skill_save tools, DI + boot wiring)
     final GoalService? svc = goals;
     if (svc == null) {
       return const ToolResult(
