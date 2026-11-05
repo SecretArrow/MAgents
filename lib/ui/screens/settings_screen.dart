@@ -16,7 +16,10 @@ import '../theme.dart';
 import '../widgets/app_message.dart';
 import 'about_screen.dart';
 import 'context_screen.dart';
+import 'briefing_screen.dart';
+import 'cron_jobs_screen.dart';
 import 'goals_screen.dart';
+import 'reminders_screen.dart';
 import 'memory_screen.dart';
 import 'files_screen.dart';
 import 'help_screen.dart';
@@ -357,6 +360,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 selected: <ThemeModeSetting>{settings.themeMode},
                 onSelectionChanged: (Set<ThemeModeSetting> selection) =>
                     _commit(themeMode: selection.first),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // -- CronJobs (v1.51.0, directly below Appearance per the
+            // user's placement request) -----------------------------------
+            _sectionTitle('CronJobs'),
+            _card(
+              child: ListTile(
+                key: const Key('cronjobs-tile'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.schedule_rounded),
+                title: const Text('CronJobs'),
+                subtitle: Text(
+                  'Scheduled jobs for this chat + Telegram channel',
+                  style: TextStyle(fontSize: 12, color: palette.muted),
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const CronJobsScreen(),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -790,6 +816,39 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onTap: () => Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) => const GoalsScreen(),
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    key: const Key('reminders-manager-tile'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.alarm_rounded),
+                    title: const Text('Reminders'),
+                    subtitle: Text(
+                      'Scheduled reminders for this chat',
+                      style: TextStyle(fontSize: 12, color: palette.muted),
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const RemindersScreen(),
+                      ),
+                    ),
+                  ),
+                  ListTile(
+                    key: const Key('briefing-tile'),
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.dashboard_rounded),
+                    title: const Text('Briefing'),
+                    subtitle: Text(
+                      'Goals, reminders, jobs and pinned memories of '
+                      'this chat at a glance',
+                      style: TextStyle(fontSize: 12, color: palette.muted),
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: () => Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const BriefingScreen(),
                       ),
                     ),
                   ),

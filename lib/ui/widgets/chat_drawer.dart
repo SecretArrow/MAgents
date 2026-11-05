@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../di.dart';
 import '../../l10n/app_strings.dart';
 import '../../models/models.dart';
+import '../screens/briefing_screen.dart';
 import '../screens/files_screen.dart';
 import '../screens/goals_screen.dart';
 import '../screens/memory_screen.dart';
@@ -98,6 +99,32 @@ class ChatDrawer extends ConsumerWidget {
         return;
       }
       _snack(context, strings.exportChatMarkdownDone(file.path));
+    } catch (_) {
+      if (!context.mounted) return;
+      _snack(context, strings.operationFailed);
+    }
+  }
+
+  /// Exports the ACTIVE session as a self-contained HTML file
+  /// (v1.51.0) — long-press on the export-chat button.
+  Future<void> _exportActiveHtml(BuildContext context, WidgetRef ref) async {
+    final AppStrings strings = stringsOf(context);
+    final String? sessionId = ref.read(chatControllerProvider).sessionId;
+    if (sessionId == null ||
+        ref.read(chatControllerProvider).messages.isEmpty) {
+      _snack(context, strings.exportChatMarkdownEmpty);
+      return;
+    }
+    try {
+      final File? file = await ref
+          .read(sessionExporterProvider)
+          .exportHtml(sessionId);
+      if (!context.mounted) return;
+      if (file == null) {
+        _snack(context, strings.exportChatMarkdownEmpty);
+        return;
+      }
+      _snack(context, 'HTML export saved: ${file.path}');
     } catch (_) {
       if (!context.mounted) return;
       _snack(context, strings.operationFailed);
@@ -220,6 +247,25 @@ class ChatDrawer extends ConsumerWidget {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  // Briefing (v1.51.0): per-chat personal-agent summary.
+                  IconButton(
+                    key: const Key('drawer-briefing'),
+                    tooltip: 'Briefing',
+                    visualDensity: VisualDensity.compact,
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const BriefingScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.dashboard_rounded,
+                      color: Colors.white,
+                      size: 20,
                     ),
                   ),
                   // Global chat search (v1.15.0).
@@ -469,6 +515,10 @@ class ChatDrawer extends ConsumerWidget {
                     onPressed: () async {
                       Navigator.of(context).pop();
                       await _exportActiveMarkdown(context, ref);
+                    },
+                    onLongPress: () async {
+                      Navigator.of(context).pop();
+                      await _exportActiveHtml(context, ref);
                     },
                   ),
                   IconButton(
