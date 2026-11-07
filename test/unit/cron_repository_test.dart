@@ -77,10 +77,7 @@ void main() {
 
   group('PrefsCronRepository key contract', () {
     test('storage key is scoped by session id', () {
-      expect(
-        PrefsCronRepository.keyFor('abc'),
-        'magents.cronjobs.v1.abc',
-      );
+      expect(PrefsCronRepository.keyFor('abc'), 'magents.cronjobs.v1.abc');
     });
   });
 }

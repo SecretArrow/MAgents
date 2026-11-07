@@ -9,8 +9,6 @@ import 'package:magents/services/scheduled_job_repository.dart';
 import 'package:magents/services/scheduled_job_runner.dart';
 import 'package:magents/ui/screens/cron_jobs_screen.dart';
 
-import '../support/test_doubles.dart';
-
 /// Port Fase 1 — the merged CronJobs screen (ZAgents cron manager +
 /// MAgents global Telegram fallback card) shows ONLY the active chat's
 /// jobs (per-chat isolation).
@@ -27,12 +25,10 @@ void main() {
   );
 
   Future<void> pumpScreen(WidgetTester tester) async {
-    final MemoryCronRepository repo = MemoryCronRepository(
-      <String, CronState>{
-        's1': CronState(jobs: <CronJob>[job('a', 'Alpha job', 's1')]),
-        's2': CronState(jobs: <CronJob>[job('b', 'Beta job', 's2')]),
-      },
-    );
+    final MemoryCronRepository repo = MemoryCronRepository(<String, CronState>{
+      's1': CronState(jobs: <CronJob>[job('a', 'Alpha job', 's1')]),
+      's2': CronState(jobs: <CronJob>[job('b', 'Beta job', 's2')]),
+    });
     await tester.pumpWidget(
       ProviderScope(
         overrides: <Override>[
@@ -65,8 +61,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('shows only the active chats jobs + telegram fallback card',
-      (tester) async {
+  testWidgets('shows only the active chats jobs + telegram fallback card', (
+    tester,
+  ) async {
     await pumpScreen(tester);
     expect(find.text('Alpha job'), findsOneWidget);
     expect(find.text('Beta job'), findsNothing);

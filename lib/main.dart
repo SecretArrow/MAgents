@@ -64,24 +64,24 @@ Future<void> main() async {
   // widget tree is running (main() is the ONLY place the scheduler is
   // started, so widget tests never inherit a pending periodic timer).
   final ProviderContainer container = ProviderContainer(
-      overrides: <Override>[
-        settingsRepositoryProvider.overrideWithValue(settingsRepo),
-        contextRepositoryProvider.overrideWithValue(contextRepo),
-        promptRepositoryProvider.overrideWithValue(promptRepo),
-        memoryRepositoryProvider.overrideWithValue(memoryRepo),
-        goalRepositoryProvider.overrideWithValue(goalRepo),
-        reminderRepositoryProvider.overrideWithValue(reminderRepo),
-        scheduledJobRepositoryProvider.overrideWithValue(jobRepo),
-        cronRepositoryProvider.overrideWithValue(cronRepo),
-        telegramConfigStoreProvider.overrideWithValue(
-          PrefsTelegramConfigStore(
-            secrets: const FlutterSecretBox(),
-            prefs: appLockPrefs,
-          ),
+    overrides: <Override>[
+      settingsRepositoryProvider.overrideWithValue(settingsRepo),
+      contextRepositoryProvider.overrideWithValue(contextRepo),
+      promptRepositoryProvider.overrideWithValue(promptRepo),
+      memoryRepositoryProvider.overrideWithValue(memoryRepo),
+      goalRepositoryProvider.overrideWithValue(goalRepo),
+      reminderRepositoryProvider.overrideWithValue(reminderRepo),
+      scheduledJobRepositoryProvider.overrideWithValue(jobRepo),
+      cronRepositoryProvider.overrideWithValue(cronRepo),
+      telegramConfigStoreProvider.overrideWithValue(
+        PrefsTelegramConfigStore(
+          secrets: const FlutterSecretBox(),
+          prefs: appLockPrefs,
         ),
-        appLockPrefsProvider.overrideWithValue(appLockPrefs),
-        ipMemoPrefsProvider.overrideWithValue(ipMemoPrefs),
-      ],
+      ),
+      appLockPrefsProvider.overrideWithValue(appLockPrefs),
+      ipMemoPrefsProvider.overrideWithValue(ipMemoPrefs),
+    ],
   );
   runApp(
     UncontrolledProviderScope(container: container, child: const MAgentsApp()),

@@ -113,10 +113,7 @@ class DefaultCronDispatcher implements CronActionDispatcher {
     return (token: token, chatId: chatId);
   }
 
-  Future<CronDispatchResult> _sendTelegram(
-    CronJob job,
-    String text,
-  ) async {
+  Future<CronDispatchResult> _sendTelegram(CronJob job, String text) async {
     final ({String token, String chatId}) creds = await _credentials(job);
     final TelegramResult result = await telegram.send(
       botToken: creds.token,
@@ -291,9 +288,8 @@ class CronSchedulerCore {
       }
       changed = true;
       try {
-        final DateTime? next = CronExpression.parse(
-          job.expression,
-        ).nextAfter(now);
+        final DateTime? next = CronExpression.parse(job.expression)
+            .nextAfter(now);
         jobs.add(job.copyWith(nextRunAtMs: next?.millisecondsSinceEpoch));
       } on CronFormatException {
         jobs.add(job.copyWith(nextRunAtMs: null));
@@ -340,9 +336,9 @@ class CronJobsController extends FamilyNotifier<CronState, String> {
   Future<void> saveJob(CronJob job) async {
     int? nextMs;
     try {
-      nextMs = CronExpression.parse(
-        job.expression,
-      ).nextAfter(_now)?.millisecondsSinceEpoch;
+      nextMs = CronExpression.parse(job.expression)
+          .nextAfter(_now)
+          ?.millisecondsSinceEpoch;
     } on CronFormatException {
       nextMs = null;
     }
@@ -391,9 +387,9 @@ class CronJobsController extends FamilyNotifier<CronState, String> {
     int? nextMs = target.nextRunAtMs;
     if (enabled) {
       try {
-        nextMs = CronExpression.parse(
-          target.expression,
-        ).nextAfter(_now)?.millisecondsSinceEpoch;
+        nextMs = CronExpression.parse(target.expression)
+            .nextAfter(_now)
+            ?.millisecondsSinceEpoch;
       } on CronFormatException {
         nextMs = null;
       }
@@ -453,9 +449,7 @@ class CronJobsController extends FamilyNotifier<CronState, String> {
 /// session on build; main() seeds the set with every stored chat at
 /// boot. The scheduler ticks exactly these sessions — a chat's jobs can
 /// only ever fire inside its own scope.
-final cronKnownSessionsProvider = Provider<Set<String>>(
-  (ref) => <String>{},
-);
+final cronKnownSessionsProvider = Provider<Set<String>>((ref) => <String>{});
 
 /// Timer-driven service tying the per-session repositories, controllers
 /// and dispatcher together. Started once from main() (production boot) —
@@ -557,17 +551,15 @@ class CronSchedulerService {
       // Advance the schedule only for real (persisted) jobs — "run now"
       // probes keep their pending next occurrence.
       try {
-        final DateTime? next = CronExpression.parse(
-          job.expression,
-        ).nextAfter(now);
+        final DateTime? next = CronExpression.parse(job.expression)
+            .nextAfter(now);
         stamped = stamped.copyWith(nextRunAtMs: next?.millisecondsSinceEpoch);
       } on CronFormatException {
         stamped = stamped.copyWith(nextRunAtMs: null);
       }
     }
-    await controllerFor(
-      job.sessionId,
-    ).recordRun(stamped, now, result.ok, result.detail);
+    await controllerFor(job.sessionId)
+        .recordRun(stamped, now, result.ok, result.detail);
     return result;
   }
 }

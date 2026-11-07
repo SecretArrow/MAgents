@@ -154,9 +154,7 @@ class _CronJobsScreenState extends ConsumerState<CronJobsScreen> {
       ),
     );
     if (confirmed == true) {
-      await ref
-          .read(cronJobsProvider(_sessionId).notifier)
-          .removeJob(job.id);
+      await ref.read(cronJobsProvider(_sessionId).notifier).removeJob(job.id);
     }
   }
 

@@ -314,8 +314,10 @@ void main() {
       await container
           .read(cronJobsProvider('s1').notifier)
           .saveJob(_job('f', expression: '0 8 * * *'));
-      expect(repo.load('s1').jobs.single.nextRunAtMs,
-          DateTime(2026, 1, 15, 8).millisecondsSinceEpoch);
+      expect(
+        repo.load('s1').jobs.single.nextRunAtMs,
+        DateTime(2026, 1, 15, 8).millisecondsSinceEpoch,
+      );
       expect(container.read(cronJobsProvider('s2')).jobs, isEmpty);
       expect(repo.load('s2').jobs, isEmpty);
     });
@@ -339,13 +341,12 @@ void main() {
       llm: LlmClient(),
       telegram: TelegramSender(),
       background: RecordingBackgroundRun(),
-      executeTool:
-          (
-            String name,
-            Map<String, dynamic> args, {
-            String? sessionId,
-            String? browserContext,
-          }) async => const ToolResult(ok: true, llmOutput: 'unused'),
+      executeTool: (
+        String name,
+        Map<String, dynamic> args, {
+        String? sessionId,
+        String? browserContext,
+      }) async => const ToolResult(ok: true, llmOutput: 'unused'),
       resolveConfig: () => const LlmConfig(
         baseUrl: 'https://example.invalid',
         apiKey: 'k',
@@ -372,16 +373,18 @@ void main() {
       expect(seenPrompt, 'summarize the news');
     });
 
-    test('empty target defaults to the OWNING chat (never a new chat)',
-        () async {
-      String? seenSession;
-      await dispatcher((session, prompt) async {
-        seenSession = session;
-        return null;
-      }).dispatch(chatJob());
+    test(
+      'empty target defaults to the OWNING chat (never a new chat)',
+      () async {
+        String? seenSession;
+        await dispatcher((session, prompt) async {
+          seenSession = session;
+          return null;
+        }).dispatch(chatJob());
 
-      expect(seenSession, 'owner-1');
-    });
+        expect(seenSession, 'owner-1');
+      },
+    );
 
     test('a refusal reason becomes a recorded failure detail', () async {
       final CronDispatchResult result = await dispatcher(
@@ -397,13 +400,12 @@ void main() {
         llm: LlmClient(),
         telegram: TelegramSender(),
         background: RecordingBackgroundRun(),
-        executeTool:
-            (
-              String name,
-              Map<String, dynamic> args, {
-              String? sessionId,
-              String? browserContext,
-            }) async => const ToolResult(ok: true, llmOutput: 'unused'),
+        executeTool: (
+          String name,
+          Map<String, dynamic> args, {
+          String? sessionId,
+          String? browserContext,
+        }) async => const ToolResult(ok: true, llmOutput: 'unused'),
         resolveConfig: () => const LlmConfig(
           baseUrl: 'https://example.invalid',
           apiKey: 'k',
@@ -441,10 +443,7 @@ void main() {
     );
 
     test('expression mapping', () {
-      expect(
-        CronLegacyMigration.expressionFor(legacy(id: 'a')),
-        '30 7 * * *',
-      );
+      expect(CronLegacyMigration.expressionFor(legacy(id: 'a')), '30 7 * * *');
       expect(
         CronLegacyMigration.expressionFor(
           legacy(id: 'b', kind: JobScheduleKind.weekly, weekday: 7),

@@ -295,9 +295,9 @@ class CronState {
         .map(CronRunEntry.fromJson)
         .toList(),
     enabled: json['enabled'] as bool? ?? true,
-    migratedLegacyIds: (json['migratedLegacyIds'] as List<dynamic>? ??
-            const <dynamic>[])
-        .whereType<String>()
-        .toList(),
+    migratedLegacyIds:
+        (json['migratedLegacyIds'] as List<dynamic>? ?? const <dynamic>[])
+            .whereType<String>()
+            .toList(),
   );
 }

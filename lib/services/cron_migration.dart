@@ -99,9 +99,9 @@ class CronLegacyMigration {
       for (final CronJob c in converted) {
         int? nextMs;
         try {
-          nextMs = CronExpression.parse(
-            c.expression,
-          ).nextAfter(now)?.millisecondsSinceEpoch;
+          nextMs = CronExpression.parse(c.expression)
+              .nextAfter(now)
+              ?.millisecondsSinceEpoch;
         } on CronFormatException {
           nextMs = null;
         }
@@ -118,10 +118,7 @@ class CronLegacyMigration {
       );
     }
     if (migrated > 0) {
-      state = state.copyWith(
-        jobs: jobs,
-        migratedLegacyIds: done.toList(),
-      );
+      state = state.copyWith(jobs: jobs, migratedLegacyIds: done.toList());
       await cronRepo.save(sessionId, state);
     }
     return migrated;

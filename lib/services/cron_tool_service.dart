@@ -25,9 +25,9 @@ class CronToolService {
     if (sessionId.isEmpty) return null;
     int? nextMs;
     try {
-      nextMs = CronExpression.parse(
-        job.expression,
-      ).nextAfter(_now())?.millisecondsSinceEpoch;
+      nextMs = CronExpression.parse(job.expression)
+          .nextAfter(_now())
+          ?.millisecondsSinceEpoch;
     } on CronFormatException {
       nextMs = null;
     }
@@ -53,9 +53,9 @@ class CronToolService {
       int? nextMs = j.nextRunAtMs;
       if (enabled) {
         try {
-          nextMs = CronExpression.parse(
-            j.expression,
-          ).nextAfter(_now())?.millisecondsSinceEpoch;
+          nextMs = CronExpression.parse(j.expression)
+              .nextAfter(_now())
+              ?.millisecondsSinceEpoch;
         } on CronFormatException {
           nextMs = null;
         }
@@ -73,8 +73,14 @@ class CronToolService {
     await _repo.save(
       sessionId,
       state.copyWith(
-        jobs: [for (final j in state.jobs) if (j.id != id) j],
-        history: [for (final h in state.history) if (h.jobId != id) h],
+        jobs: [
+          for (final j in state.jobs)
+            if (j.id != id) j,
+        ],
+        history: [
+          for (final h in state.history)
+            if (h.jobId != id) h,
+        ],
       ),
     );
     return true;

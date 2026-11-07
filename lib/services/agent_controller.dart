@@ -759,7 +759,6 @@ class ChatController extends Notifier<ChatState> {
     return null;
   }
 
-
   /// Clears the module staged on a fresh draft (chip unselected).
   void stageNoModule() {
     if (state.pendingModule == null) return;

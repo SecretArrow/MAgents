@@ -769,7 +769,8 @@ List<Map<String, dynamic>> buildAgentTools({
       },
       'kind': <String, dynamic>{
         'type': 'string',
-        'description': 'once|daily|weekly|interval (ignored when expression is given)',
+        'description':
+            'once|daily|weekly|interval (ignored when expression is given)',
       },
       'action': <String, dynamic>{
         'type': 'string',
