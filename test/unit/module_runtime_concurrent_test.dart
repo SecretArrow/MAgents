@@ -129,10 +129,16 @@ void main() {
     );
 
     // Both invocations are now live; each carries a UNIQUE token.
+    // Pick each token by module identity — registration ORDER of two
+    // concurrent runs is a scheduling race (this test flaked on it).
     await pumpUntilInvocations(2);
     expect(js.moduleInvocations.length, 2);
-    final String tokenA = js.moduleInvocations[0].contextToken!;
-    final String tokenB = js.moduleInvocations[1].contextToken!;
+    final String tokenA = js.moduleInvocations
+        .singleWhere((ModuleInvocation i) => i.info['name'] == 'moda')
+        .contextToken!;
+    final String tokenB = js.moduleInvocations
+        .singleWhere((ModuleInvocation i) => i.info['name'] == 'modb')
+        .contextToken!;
     expect(tokenA, isNot(tokenB));
 
     // Cross-emitted traffic: each emit resolves to ITS OWN chat callback

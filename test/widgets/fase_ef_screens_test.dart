@@ -113,15 +113,20 @@ void main() {
     expect(find.byKey(const Key('telegram-test-button')), findsOneWidget);
     expect(find.text('Morning digest'), findsOneWidget);
     // The merged manager is one long ListView: the second (migrated)
-    // job sits below the fold of the default test surface.
-    await tester.scrollUntilVisible(
-      find.text('Weekly report'),
-      300,
-      scrollable: find.descendant(
-        of: find.byType(CronJobsScreen),
-        matching: find.byType(ListView),
-      ),
+    // job sits below the fold of the default test surface — drag the
+    // list up until it is built.
+    final Finder list = find.descendant(
+      of: find.byType(CronJobsScreen),
+      matching: find.byType(ListView),
     );
+    for (
+      int i = 0;
+      i < 12 && find.text('Weekly report').evaluate().isEmpty;
+      i++
+    ) {
+      await tester.drag(list, const Offset(0, -320));
+      await tester.pump(const Duration(milliseconds: 350));
+    }
     expect(find.text('Weekly report'), findsOneWidget);
     expect(find.byKey(const Key('cron-add-fab')), findsOneWidget);
   });
