@@ -81,6 +81,11 @@ void main() {
     expect(find.textContaining('reachable'), findsWidgets);
     expect(find.byKey(const Key('ollama-use-as-provider')), findsOneWidget);
 
+    // The probe's info message box auto-dismisses after ~2.6 s; let it
+    // go first or it swallows the tap on the button below.
+    await tester.pump(const Duration(seconds: 3));
+    await tester.ensureVisible(find.byKey(const Key('ollama-use-as-provider')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('ollama-use-as-provider')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));

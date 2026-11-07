@@ -863,6 +863,15 @@ void main() {
     ) async {
       await openSettings(tester);
 
+      // The tile sits below the fold: reveal it first (same pattern as
+      // the tapping test below).
+      await tester.dragUntilVisible(
+        find.byKey(const Key('battery-reliability-tile')),
+        find.byType(ListView),
+        const Offset(0, -200),
+      );
+      await tester.pump();
+
       // Default double: not exempted yet.
       expect(find.byKey(const Key('battery-reliability-tile')), findsOneWidget);
       expect(find.textContaining('Optimized (may pause runs)'), findsOneWidget);
