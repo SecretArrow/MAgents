@@ -70,8 +70,9 @@ class MemoryCronRepository implements CronRepository {
   final Map<String, CronState> _states;
 
   @override
-  CronState load(String sessionId) =>
-      sessionId.isEmpty ? const CronState() : _states[sessionId] ?? const CronState();
+  CronState load(String sessionId) => sessionId.isEmpty
+      ? const CronState()
+      : _states[sessionId] ?? const CronState();
 
   @override
   Future<void> save(String sessionId, CronState state) async {
