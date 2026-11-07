@@ -5,6 +5,7 @@ import 'package:magents/di.dart';
 import 'package:magents/models/cron_job.dart';
 import 'package:magents/models/models.dart';
 import 'package:magents/services/cron_repository.dart';
+import 'package:magents/services/scheduled_job_runner.dart';
 import 'package:magents/ui/screens/cron_jobs_screen.dart';
 
 import '../support/test_doubles.dart';

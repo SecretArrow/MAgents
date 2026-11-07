@@ -194,7 +194,7 @@ final cronDispatcherProvider = Provider<CronActionDispatcher>((ref) {
       final AppSettings settings = ref.read(settingsProvider);
       return LlmConfig(
         baseUrl: settings.baseUrl,
-        apiKey: <redacted>
+        apiKey: settings.apiKey,
         model: settings.model,
         engine: settings.engine,
       );
