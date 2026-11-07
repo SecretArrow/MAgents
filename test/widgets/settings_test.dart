@@ -642,8 +642,9 @@ void main() {
       find.text('A provider with this name already exists.'),
       findsOneWidget,
     );
-    // Nvidia NIM joined the built-in preset list (v1.49.8): 9 presets.
-    expect(container.read(settingsProvider).presets.length, 9);
+    // Built-in presets: 9 through v1.49.8 (Nvidia NIM) + Local AI
+    // (Local AI port) = 10.
+    expect(container.read(settingsProvider).presets.length, 10);
   });
 
   testWidgets('a provider can be deleted from the editor', (

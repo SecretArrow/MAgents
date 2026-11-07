@@ -1381,6 +1381,7 @@ const Map<String, String> providerPresets = <String, String>{
   'DeepSeek': 'https://api.deepseek.com/v1',
   'Groq': 'https://api.groq.com/openai/v1',
   'Custom': '',
+  'Local AI': 'http://127.0.0.1:11434/v1',
 };
 
 /// Default model applied when switching provider presets and the current

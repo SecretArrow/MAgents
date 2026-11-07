@@ -31,6 +31,14 @@ import 'services/memory_repository.dart';
 import 'services/memory_service.dart';
 import 'services/briefing_service.dart';
 import 'services/local_ai/external_ollama_scanner.dart';
+import 'models/local_model.dart';
+import 'services/local_ai/llm_benchmark.dart';
+import 'services/local_ai/llm_server_controller.dart';
+import 'services/local_ai/local_model_io.dart';
+import 'services/local_ai/local_model_store.dart';
+import 'services/local_ai/model_downloader.dart';
+import 'services/local_ai/ollama_registry_client.dart';
+import 'services/local_ai/remote_catalog.dart';
 import 'services/reminder_repository.dart';
 import 'services/reminder_service.dart';
 import 'services/scheduled_job_repository.dart';
@@ -815,8 +823,74 @@ final updateCheckProvider =
 /// GitHub Releases update checker (injectable client for tests).
 final updateCheckerProvider = Provider<UpdateChecker>((ref) => UpdateChecker());
 
-/// External Ollama server probe (Local AI port Fase 2; ZAgents contract
-/// §2.3). Overridden in tests with a fake.
+// -- Local AI (bundled llama-server + Ollama-compatible) ----------------
+
+/// Local model store; must be overridden in main() with the real
+/// SharedPreferences-backed repository.
+final localModelRepositoryProvider = Provider<LocalModelRepository>((ref) {
+  throw UnimplementedError(
+    'localModelRepositoryProvider must be overridden in main()',
+  );
+});
+
+/// Live local-model state (installed list + llama-server config).
+final localModelsProvider =
+    NotifierProvider<LocalModelsController, LocalModelState>(
+      LocalModelsController.new,
+    );
+
+/// Platform channel to the bundled llama.cpp llama-server runtime
+/// (`magents/llmserver`); overridden with the scriptable fake in tests.
+final llmServerPlatformProvider = Provider<LlmServerPlatform>(
+  (ref) => MethodChannelLlmServerPlatform(),
+);
+
+/// Shared injectable HTTP client for every Local AI network call
+/// (llama-server health checks, model downloads, registry lookups,
+/// external Ollama probes) — overridden with a mock in tests.
+final llmHttpClientProvider = Provider<http.Client>((ref) => http.Client());
+
+/// Live llama-server lifecycle state (status, active model, log tail).
+final llmServerProvider = NotifierProvider<LlmServerController, LlmServerState>(
+  LlmServerController.new,
+);
+
+/// Download queue (one row per model). The completion hook is wired in
+/// the controller's build() so a verified download lands in the
+/// installed list via localModelsProvider's controller.
+final downloadQueueProvider =
+    NotifierProvider<DownloadQueueController, List<DownloadProgress>>(
+      DownloadQueueController.new,
+    );
+
+/// Ollama registry (manifest -> blob) resolver (injectable client).
+final ollamaRegistryClientProvider = Provider<OllamaRegistryClient>(
+  (ref) => OllamaRegistryClient(),
+);
+
+/// External Ollama server probe (Server tab detection row).
 final externalOllamaScannerProvider = Provider<ExternalOllamaScanner>(
   (ref) => ExternalOllamaScanner(),
+);
+
+/// File import/export/share helper for local models.
+final localModelIoProvider = Provider<LocalModelIo>((ref) => LocalModelIo());
+
+/// Cached total device RAM in bytes (null = not probed yet). Populated
+/// once by the Ollama Manage screen's poll timer; drives the RAM line
+/// and the catalog auto-filter.
+final deviceRamBytesProvider = StateProvider<int?>((ref) => null);
+
+/// Last benchmark run (idle/running/done/failed). Deliberately OUTSIDE
+/// the frozen `LlmServerState` — benchmark progress is screen state,
+/// not server lifecycle.
+final benchmarkRunProvider = StateProvider<BenchmarkRunState>(
+  (ref) => const BenchmarkRunState(),
+);
+
+/// Remote catalog fetcher — reuses the shared Local AI HTTP client
+/// (`llmHttpClientProvider`), so overriding that one provider in tests
+/// feeds every call a MockClient.
+final remoteCatalogProvider = Provider<RemoteCatalogService>(
+  (ref) => RemoteCatalogService(client: ref.watch(llmHttpClientProvider)),
 );

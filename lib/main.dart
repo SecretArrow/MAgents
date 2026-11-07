@@ -53,6 +53,9 @@ Future<void> main() async {
   final PrefsScheduledJobRepository jobRepo =
       await PrefsScheduledJobRepository.create();
   final PrefsCronRepository cronRepo = await PrefsCronRepository.create();
+  // Local AI store (installed models + llama-server config).
+  final PrefsLocalModelRepository localModelRepo =
+      await PrefsLocalModelRepository.create();
   final FilePromptRepository promptRepo = FilePromptRepository(
     resolveBaseDir: getApplicationDocumentsDirectory,
   );
@@ -73,6 +76,7 @@ Future<void> main() async {
       reminderRepositoryProvider.overrideWithValue(reminderRepo),
       scheduledJobRepositoryProvider.overrideWithValue(jobRepo),
       cronRepositoryProvider.overrideWithValue(cronRepo),
+      localModelRepositoryProvider.overrideWithValue(localModelRepo),
       telegramConfigStoreProvider.overrideWithValue(
         PrefsTelegramConfigStore(
           secrets: const FlutterSecretBox(),

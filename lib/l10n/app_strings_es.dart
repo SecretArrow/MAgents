@@ -1680,4 +1680,214 @@ class AppStringsEs implements AppStrings {
       'El runtime LLM integrado en el dispositivo aún no está '
       'disponible en esta compilación. Aun así puedes apuntar MAgents '
       'a un servidor Ollama externo abajo.';
+
+  @override
+  String get cronOpenOllamaManage => 'Abrir Gestionar Ollama';
+  @override
+  String get ollamaActiveModelLabel => 'Modelo activo';
+  @override
+  String ollamaAddedAt(String date) => 'Añadido el $date';
+  @override
+  String ollamaBattery(int percent) => 'Batería $percent%';
+  @override
+  String ollamaBatteryCharging(int percent) => 'Batería $percent% · cargando';
+  @override
+  String ollamaBatteryLow(int percent) => 'Batería $percent% — baja';
+  @override
+  String get ollamaBenchmark => 'Benchmark';
+  @override
+  String ollamaBenchmarkFailed(String error) => 'Error de benchmark: $error';
+  @override
+  String get ollamaBenchmarkRunning => 'Midiendo…';
+  @override
+  String ollamaBenchmarkSummary(
+    String tokPerSec,
+    int firstTokenMs,
+    int tokens,
+  ) => '$tokPerSec tok/s · primer token ${firstTokenMs}ms · $tokens tokens';
+  @override
+  String get ollamaCatalogRefresh => 'Actualizar catálogo';
+  @override
+  String ollamaCatalogRefreshDone(int count) =>
+      'Catálogo actualizado: $count modelos.';
+  @override
+  String ollamaCatalogRefreshFailed(String error) =>
+      'Error al actualizar el catálogo: $error';
+  @override
+  String get ollamaCatalogReset => 'Restablecer';
+  @override
+  String get ollamaCatalogResetDone => 'De vuelta al catálogo integrado.';
+  @override
+  String get ollamaClearFinished => 'Limpiar terminadas';
+  @override
+  String get ollamaClose => 'Cerrar';
+  @override
+  String get ollamaConfigInvalid =>
+      'El puerto debe ser 1024–65535, el contexto 512–32768 y los hilos 0–8.';
+  @override
+  String get ollamaConfigSave => 'Guardar configuración';
+  @override
+  String get ollamaConfigSaved => 'Configuración del servidor guardada.';
+  @override
+  String get ollamaContextLabel => 'Tamaño de contexto';
+  @override
+  String get ollamaCopyAll => 'Copiar todo';
+  @override
+  String ollamaCtxTokens(String tokens) => '$tokens ctx';
+  @override
+  String get ollamaCustomUrlInvalid =>
+      'Introduce una URL http(s) que termine en .gguf';
+  @override
+  String get ollamaCustomUrlLabel => 'URL personalizada (.gguf)';
+  @override
+  String ollamaDeleteBody(String name) =>
+      '“$name” y su archivo se eliminarán de este dispositivo.';
+  @override
+  String get ollamaDeleteTitle => '¿Eliminar este modelo?';
+  @override
+  String ollamaDeviceRam(String size) => 'RAM del dispositivo $size';
+  @override
+  String get ollamaDlCanceled => 'Cancelada';
+  @override
+  String get ollamaDlCompleted => 'Completada';
+  @override
+  String get ollamaDlFailed => 'Error';
+  @override
+  String get ollamaDlPaused => 'En pausa';
+  @override
+  String get ollamaDlQueued => 'En cola';
+  @override
+  String get ollamaDlRunning => 'Descargando';
+  @override
+  String get ollamaDownload => 'Descargar';
+  @override
+  String ollamaDownloadStarted(String name) =>
+      '“$name” añadido a la cola de descargas.';
+  @override
+  String get ollamaDownloadingLabel => 'Descargando…';
+  @override
+  String get ollamaDownloadsEmpty => 'Aún no hay descargas.';
+  @override
+  String get ollamaExport => 'Exportar';
+  @override
+  String get ollamaExportDone => 'Modelo exportado.';
+  @override
+  String get ollamaExportNone => 'No se exportó ningún modelo.';
+  @override
+  String get ollamaExportSelected => 'Exportar seleccionados';
+  @override
+  String ollamaExportSelectedDone(int count) => '$count modelos exportados.';
+  @override
+  String get ollamaFitFilter => 'Solo modelos que caben';
+  @override
+  String get ollamaGoToCatalog => 'Ir al Catálogo';
+  @override
+  String get ollamaImportButton => 'Importar archivo .gguf';
+  @override
+  String ollamaImportDone(String name) => '“$name” importado.';
+  @override
+  String get ollamaImportFailed => 'Error al importar.';
+  @override
+  String get ollamaInstalledEmptyBody =>
+      'Descarga un modelo del Catálogo o importa un archivo .gguf.';
+  @override
+  String get ollamaInstalledEmptyTitle => 'Ningún modelo instalado';
+  @override
+  String get ollamaInstalledLabel => 'Instalado';
+  @override
+  String get ollamaLogTitle => 'Registro del servidor';
+  @override
+  String get ollamaModelEmptyHint =>
+      'Aún no hay modelos instalados: descarga uno del Catálogo.';
+  @override
+  String get ollamaModelLabel => 'Modelo';
+  @override
+  String get ollamaOomWarning =>
+      'Modelo pesado: alto riesgo de quedarse sin memoria en este '
+      'dispositivo.';
+  @override
+  String get ollamaPause => 'Pausar';
+  @override
+  String get ollamaPortLabel => 'Puerto';
+  @override
+  String ollamaRamEst(String size) => 'RAM ~$size';
+  @override
+  String get ollamaResume => 'Reanudar';
+  @override
+  String ollamaRiskBody(String ref) =>
+      '“$ref” puede superar la memoria de este dispositivo y no cargar. '
+      '¿Descargarlo de todos modos?';
+  @override
+  String get ollamaRiskTitle => '¿Descargar este modelo pesado?';
+  @override
+  String get ollamaRuntimeUnavailable =>
+      'Esta compilación o dispositivo no incluye el runtime de IA local '
+      '(armeabi-v7a no es compatible). Aún puedes conectarte a un servidor '
+      'Ollama externo más abajo.';
+  @override
+  String get ollamaSelectMode => 'Seleccionar modelos';
+  @override
+  String ollamaSelectedCount(int count) => '$count seleccionados';
+  @override
+  String ollamaSizeProgress(int receivedMb, int totalMb) =>
+      '$receivedMb de $totalMb MB';
+  @override
+  String get ollamaSizeUnknown => 'tamaño desconocido';
+  @override
+  String get ollamaSourceCatalog => 'Catálogo';
+  @override
+  String get ollamaSourceCustomUrl => 'URL personalizada';
+  @override
+  String get ollamaSourceImported => 'Importado';
+  @override
+  String get ollamaStart => 'Iniciar';
+  @override
+  String get ollamaStartFailedSnack => 'El servidor no pudo iniciarse.';
+  @override
+  String get ollamaStartWith => 'Iniciar con este modelo';
+  @override
+  String get ollamaStartedSnack => 'Servidor iniciado.';
+  @override
+  String get ollamaStatusFailed => 'Error';
+  @override
+  String get ollamaStatusRunning => 'En ejecución';
+  @override
+  String get ollamaStatusStarting => 'Iniciando…';
+  @override
+  String get ollamaStatusStopped => 'Detenido';
+  @override
+  String get ollamaStatusStopping => 'Deteniendo…';
+  @override
+  String get ollamaStatusUnavailable => 'No disponible';
+  @override
+  String get ollamaStop => 'Detener';
+  @override
+  String get ollamaStoppedSnack => 'Servidor detenido.';
+  @override
+  String get ollamaTabCatalog => 'Catálogo';
+  @override
+  String get ollamaTabDownloads => 'Descargas';
+  @override
+  String get ollamaTabInstalled => 'Instalados';
+  @override
+  String get ollamaThreadsLabel => 'Hilos (0 = automático)';
+  @override
+  String get ollamaTierHeavy => 'Pesado';
+  @override
+  String get ollamaTierLight => 'Ligero';
+  @override
+  String get ollamaTierMedium => 'Medio';
+  @override
+  String get ollamaTooLarge => 'Demasiado grande para este dispositivo';
+  @override
+  String get ollamaUseInChat => 'Usar en el chat';
+  @override
+  String ollamaUseInChatBody(String alias) =>
+      'Tu proveedor activo cambia a Local AI con el modelo “$alias”.';
+  @override
+  String get ollamaUseInChatDone => 'Local AI ya está activo para el chat.';
+  @override
+  String get ollamaUseInChatTitle => '¿Usar este modelo en el chat?';
+  @override
+  String get ollamaViewFullLog => 'Ver registro completo';
 }
