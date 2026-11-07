@@ -180,6 +180,7 @@ void main() {
             ),
           },
         );
+        container.read(cronJobsProvider('s1')); // register s1 with the ticker
 
         await scheduler.tick();
 
@@ -211,6 +212,7 @@ void main() {
         ok: false,
         detail: 'HTTP 400: chat not found',
       );
+      container.read(cronJobsProvider('s1')); // register s1 with the ticker
 
       await scheduler.tick();
 

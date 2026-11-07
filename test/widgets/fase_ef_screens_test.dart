@@ -114,7 +114,14 @@ void main() {
     expect(find.text('Morning digest'), findsOneWidget);
     // The merged manager is one long ListView: the second (migrated)
     // job sits below the fold of the default test surface.
-    await tester.scrollUntilVisible(find.text('Weekly report'), 300);
+    await tester.scrollUntilVisible(
+      find.text('Weekly report'),
+      300,
+      scrollable: find.descendant(
+        of: find.byType(CronJobsScreen),
+        matching: find.byType(ListView),
+      ),
+    );
     expect(find.text('Weekly report'), findsOneWidget);
     expect(find.byKey(const Key('cron-add-fab')), findsOneWidget);
   });
