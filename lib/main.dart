@@ -14,6 +14,7 @@ import 'services/context_repository.dart';
 import 'services/cron_migration.dart';
 import 'services/cron_repository.dart';
 import 'services/cron_scheduler.dart';
+import 'services/local_ai/local_model_store.dart';
 import 'services/goal_repository.dart';
 import 'services/memory_repository.dart';
 import 'services/prompt_repository.dart';

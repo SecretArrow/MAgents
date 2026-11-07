@@ -169,7 +169,7 @@ void main() {
         child: Builder(
           builder: (BuildContext context) {
             container = ProviderScope.containerOf(context);
-            return const ZAgentsApp();
+            return const MAgentsApp();
           },
         ),
       ),
