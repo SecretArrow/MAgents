@@ -93,7 +93,9 @@ void main() {
       1,
     );
     expect(
-      settings.presets.singleWhere((ProviderPreset p) => p.name == 'Ollama').baseUrl,
+      settings.presets
+          .singleWhere((ProviderPreset p) => p.name == 'Ollama')
+          .baseUrl,
       'http://127.0.0.1:11434/v1',
     );
   });

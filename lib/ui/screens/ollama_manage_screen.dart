@@ -38,8 +38,7 @@ class OllamaManageScreen extends ConsumerStatefulWidget {
   }
 
   @override
-  ConsumerState<OllamaManageScreen> createState() =>
-      _OllamaManageScreenState();
+  ConsumerState<OllamaManageScreen> createState() => _OllamaManageScreenState();
 }
 
 class _OllamaManageScreenState extends ConsumerState<OllamaManageScreen> {
@@ -95,9 +94,11 @@ class _OllamaManageScreenState extends ConsumerState<OllamaManageScreen> {
         break;
       }
     }
-    final ProviderPreset preset = (existing ??
-            ProviderPreset(id: newId(), name: 'Ollama'))
-        .copyWith(baseUrl: baseUrl, apiKey: '');
+    final ProviderPreset preset =
+        (existing ?? ProviderPreset(id: newId(), name: 'Ollama')).copyWith(
+          baseUrl: baseUrl,
+          apiKey: '',
+        );
     final List<ProviderPreset> presets = existing == null
         ? <ProviderPreset>[...settings.presets, preset]
         : <ProviderPreset>[

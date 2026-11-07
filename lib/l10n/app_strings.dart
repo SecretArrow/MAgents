@@ -3969,7 +3969,8 @@ class AppStringsId implements AppStrings {
   @override
   String get ollamaTileTitle => 'Kelola Ollama';
   @override
-  String get ollamaTileSubtitle => 'Runtime AI lokal yang kompatibel dengan Ollama';
+  String get ollamaTileSubtitle =>
+      'Runtime AI lokal yang kompatibel dengan Ollama';
   @override
   String get ollamaScreenTitle => 'Kelola Ollama';
   @override
