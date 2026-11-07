@@ -946,37 +946,76 @@ OpenAI-compatible: **OpenRouter, InferHub, Z.AI, OpenAI, DeepSeek, Groq, dan lai
   tools `reminder_create`, `reminder_list`, `reminder_complete`;
   repeat none/daily/weekly (selesai → jadwal berulang maju ke kemunculan
   berikutnya); layar **Reminders**; reminder jatuh tempo tampil di Briefing.
-- **CronJobs per chat** (v1.51.0, key `magents.jobs.v1.<sessionId>`) —
-  tugas terjadwal yang saat fire bisa **menampilkan notifikasi lokal**
-  dan/atau **auto-send teks ke Telegram**:
-  - **Banyak job per chat** (bukan satu!): daftar job independen, batas
-    pengaman 100 job/chat; jadwal sama persis pun tetap terpisah;
-  - jadwal: once / daily / weekly / interval (menit); aksi:
-    notify / telegram / both; status terakhir (ok/error) per job;
-  - tools: `cron_create` (bisa dipanggil berkali-kali), `cron_list`,
-    `cron_update`, `cron_delete` — hanya chat aktif;
+- **CronJobs per chat — mesin cron ASLI** (v1.52.0, key
+  `magents.cronjobs.v1.<sessionId>`): job dimiliki SATU chat (chat
+  pemilik), tidak pernah bocor ke chat lain:
+  - **ekspresi cron 5-field** standar (`menit jam tgl bulan dow`,
+    mendukung `*`, daftar `1,15`, rentang `9-17`, langkah `*/15`),
+    dengan pratinjau run berikutnya langsung di editor;
+  - **4 aksi**: `notification` (notifikasi lokal), `telegram` (Bot API;
+    token/chat-id per job, kosong = fallback konfigurasi Telegram
+    global), `agent` (headless subagent run di sandbox chat pemilik,
+    berjalan di atas **provider yang sedang aktif**), `chat` (prompt
+    disuntikkan ke chat — default chat PEMILIK, bukan chat baru);
+  - **Banyak job per chat** (batas pengaman 100), sakelar master per
+    chat, riwayat run per chat, missed-run recovery saat aplikasi
+    dibuka (job terlewat saat aplikasi mati dievaluasi ulang, bukan
+    dibanjiri);
+  - **Migrasi otomatis** dari format v1.51.0 (`magents.jobs.v1.*`):
+    daily/weekly/interval rapi → ekspresi cron; aksi `both` → 2 job;
+    job `once`/interval ganjil TETAP di store lama dan tampil di seksi
+    **Legacy** layar yang sama sampai fire — tidak ada job yang hilang
+    diam-diam;
+  - tools: `cron_create`, `cron_list`, `cron_update`, `cron_delete`,
+    `cron_toggle` — hanya chat aktif;
   - **Kelola dari Settings → CronJobs (tepat di bawah Appearance)** —
-    membuka layar penuh tersendiri berisi daftar job, editor job
-    satu halaman penuh, DAN konfigurasi Telegram (Bot Token tersimpan
-    terenkripsi via secure storage, Chat ID, tombol **Kirim tes**);
-  - mesin best-effort: pemeriksaan saat aplikasi start/resume
-    (catch-up job terlewat) + timer 1 menit selama aplikasi hidup;
-    notifikasi memakai plumbing "tugas selesai" yang sudah ada —
-    mengetuk notifikasi membuka chat pemilik job;
-  - ⚠️ **Keterbatasan jujur**: Android membunuh aplikasi di latar —
+    layar penuh: daftar job + editor + riwayat + kartu Telegram global;
+  - editor cron menampilkan **tile pintasan Local AI** (nama model +
+    tombol ke Ollama Manage) untuk aksi agent/chat bila provider aktif
+    adalah preset `Local AI`;
+  - ⚠️ **Keterbatasan jujur**: presisi cron best-effort — pemeriksaan
+    berkala (1 menit) saat aplikasi hidup + catch-up saat dibuka;
     fire presisi saat aplikasi mati total butuh AlarmManager/
-    WorkManager yang belum dipasang; job bersifat best-effort dan
-    mengejar ketertinggalan saat aplikasi dibuka lagi.
-- **Briefing** (v1.51.0) — sapaan agen personal untuk chat aktif
-  (ikon dashboard di drawer / Settings): goals aktif + progres,
-  reminder jatuh tempo, job terjadwal berikutnya, memori ter-pin.
-  Agregasi murni Dart (`BriefingService`), layar baca-saja.
+    WorkManager yang belum dipasang.
+- **Briefing** (v1.51.0; v1.52.0: next-fire dari mesin cron baru) —
+  sapaan agen personal untuk chat aktif (ikon dashboard di drawer /
+  Settings): goals aktif + progres, reminder jatuh tempo, job
+  terjadwal berikutnya (legacy), **job cron berikutnya (mesin baru)**,
+  memori ter-pin. Agregasi murni Dart (`BriefingService`), layar
+  baca-saja.
 - **skill_save** (v1.51.0) — agent kini bisa MENYIMPAN skill/playbook
   baru dari chat (nama + deskripsi + instruksi); tampil di layar Skills
   seperti skill terinstal lain (sumber tercatat `chat:<nama>`).
 - **Ekspor HTML** (v1.51.0) — selain Markdown, transkrip chat bisa
   diekspor sebagai satu file `.html` mandiri (CSS inline): tekan-lama
   tombol ekspor chat di drawer.
+
+## 🤖 Local AI / Ollama (v1.52.0)
+
+Dua jalur menjalankan model lokal, dikelola dari **Settings → Local AI
+→ Ollama Manage** (tepat di bawah CronJobs):
+
+- **Server eksternal** — arahkan MAgents ke server Ollama mana pun di
+  jaringan (probe `GET /api/version` dari tab Server): tombol **Pakai
+  sebagai provider** membuat/mengaktifkan preset `Ollama`
+  (`http://<host>:11434/v1`, tanpa API key).
+- **Runtime di perangkat** — llama.cpp `llama-server` (pin **b12182**)
+  ter-bundle sebagai `libllamaserver.so` + library pendamping,
+  di-cross-compile CI per ABI (**arm64-v8a + x86_64**) dan di-host
+  foreground service (`LlmServerService`, channel `magents/llmserver`).
+  Tab **Server** (start/stop, log, konfigurasi ctx/gpu-layers/port,
+  auto-start saat boot via BootReceiver, penjaga baterai lemah),
+  **Catalog** (14 model kurasi + katalog remote Ollama, filter RAM
+  perangkat), **Installed** (impor/ekspor/hapus GGUF), **Downloads**
+  (antrean unduh dari registry Ollama dengan verifikasi SHA-256).
+  Saat server jalan, preset provider **`Local AI`**
+  (`http://127.0.0.1:11434/v1`) terisi otomatis dari model aktif —
+  chat, subagent, dan aksi cron agent/chat langsung memakainya.
+- ⚠️ **Keterbatasan jujur**: **armeabi-v7a tidak membawa runtime**
+  (split APK-nya tetap terbit; layar menampilkan status tidak
+  tersedia dan aplikasi berjalan normal); APK universal lebih besar
+  karena runtime dua ABI; model besar dibatasi RAM perangkat (filter
+  katalog menandai yang tidak muat).
 
 ## 📲 Cara pakai
 

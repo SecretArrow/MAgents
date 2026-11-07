@@ -106,6 +106,18 @@ class BriefingScreen extends ConsumerWidget {
               ),
             ),
           ],
+          if (data.nextCronJob != null) ...<Widget>[
+            const _SectionTitle('Next cron job'),
+            ListTile(
+              key: const Key('briefing-next-cron'),
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.schedule_rounded, size: 20),
+              title: Text(data.nextCronJob!.name),
+              subtitle: Text(
+                'fires ${DateTime.fromMillisecondsSinceEpoch(data.nextCronJob!.nextRunAtMs!).toIso8601String().substring(0, 16).replaceAll('T', ' ')} · ${data.nextCronJob!.expression} · ${data.nextCronJob!.action.name}',
+              ),
+            ),
+          ],
           if (data.pinnedMemories.isNotEmpty) ...<Widget>[
             const _SectionTitle('Pinned memories'),
             for (final MemoryEntry m in data.pinnedMemories)

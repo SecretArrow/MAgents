@@ -231,6 +231,7 @@ final briefingServiceProvider = Provider<BriefingService>(
     reminders: ref.watch(reminderServiceProvider),
     memory: ref.watch(memoryServiceProvider),
     jobs: ref.watch(scheduledJobServiceProvider),
+    cron: ref.watch(cronRepositoryProvider),
   ),
 );
 

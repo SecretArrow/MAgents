@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:magents/models/models.dart';
 import 'package:magents/services/briefing_service.dart';
+import 'package:magents/models/cron_job.dart';
+import 'package:magents/services/cron_repository.dart';
 import 'package:magents/services/goal_repository.dart';
 import 'package:magents/services/goal_service.dart';
 import 'package:magents/services/html_export.dart';
@@ -340,16 +342,78 @@ void main() {
         message: 'hi',
         kind: JobScheduleKind.daily,
       );
+      final MemoryCronRepository cronRepo = MemoryCronRepository(
+        <String, CronState>{
+          'chat-a': CronState(
+            jobs: <CronJob>[
+              CronJob(
+                id: 'c-late',
+                sessionId: 'chat-a',
+                name: 'Later cron',
+                expression: '0 9 * * *',
+                action: CronActionKind.notification,
+                nextRunAtMs: DateTime.now()
+                    .add(const Duration(hours: 5))
+                    .millisecondsSinceEpoch,
+                createdAtMs: 0,
+              ),
+              CronJob(
+                id: 'c-early',
+                sessionId: 'chat-a',
+                name: 'Early cron',
+                expression: '*/30 * * * *',
+                action: CronActionKind.agent,
+                nextRunAtMs: DateTime.now()
+                    .add(const Duration(hours: 1))
+                    .millisecondsSinceEpoch,
+                createdAtMs: 0,
+              ),
+              CronJob(
+                id: 'c-off',
+                sessionId: 'chat-a',
+                name: 'Disabled cron',
+                expression: '* * * * *',
+                action: CronActionKind.chat,
+                enabled: false,
+                nextRunAtMs: DateTime.now()
+                    .add(const Duration(minutes: 5))
+                    .millisecondsSinceEpoch,
+                createdAtMs: 0,
+              ),
+            ],
+          ),
+          'chat-b': CronState(
+            jobs: <CronJob>[
+              CronJob(
+                id: 'c-other',
+                sessionId: 'chat-b',
+                name: 'Other chat cron',
+                expression: '* * * * *',
+                action: CronActionKind.notification,
+                nextRunAtMs: DateTime.now()
+                    .add(const Duration(minutes: 1))
+                    .millisecondsSinceEpoch,
+                createdAtMs: 0,
+              ),
+            ],
+          ),
+        },
+      );
       final BriefingService briefing = BriefingService(
         goals: goals,
         reminders: reminders,
         memory: mem,
         jobs: jobs,
+        cron: cronRepo,
       );
       final BriefingData data = briefing.build('chat-a');
       expect(data.goals.single.title, 'Ship it');
       expect(data.dueReminders.single.title, 'Due soon');
       expect(data.nextJob?.title, 'Morning ping');
+      // Fase 5(b): next-fire comes from the NEW cron engine — earliest
+      // ENABLED job of this chat; the disabled and other-chat jobs lose.
+      expect(data.nextCronJob?.name, 'Early cron');
+      expect(briefing.build('chat-b').nextCronJob?.name, 'Other chat cron');
       expect(data.pinnedMemories.single.text, 'Pinned fact');
       expect(briefing.build('chat-b').goals, isEmpty);
       expect(
