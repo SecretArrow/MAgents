@@ -40,13 +40,12 @@ void main() {
       llm: llm,
       telegram: TelegramSender(),
       background: RecordingBackgroundRun(),
-      executeTool:
-          (
-            String name,
-            Map<String, dynamic> args, {
-            String? sessionId,
-            String? browserContext,
-          }) async => const ToolResult(ok: true, llmOutput: 'unused'),
+      executeTool: (
+        String name,
+        Map<String, dynamic> args, {
+        String? sessionId,
+        String? browserContext,
+      }) async => const ToolResult(ok: true, llmOutput: 'unused'),
       // Mirrors di.dart's cronDispatcherProvider closure verbatim.
       resolveConfig: () => LlmConfig(
         baseUrl: settings.baseUrl,
