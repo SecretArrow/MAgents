@@ -46,3 +46,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Local AI: llama-server runtime binaries are injected by CI
+# (.github/actions/llama-runtime) — never committed.
+android/app/src/main/jniLibs/

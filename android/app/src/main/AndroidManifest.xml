@@ -50,6 +50,29 @@
             android:name=".MAgentsForegroundService"
             android:exported="false"
             android:foregroundServiceType="dataSync"/>
+        <!-- Local AI: dedicated foreground service hosting the bundled
+             llama.cpp llama-server binary (libllamaserver.so, run from
+             nativeLibraryDir). dataSync = long-running local data
+             processing, the closest FGS type — same as the agent loop, so
+             the FOREGROUND_SERVICE_DATA_SYNC permission above already
+             covers it. -->
+        <service
+            android:name=".LlmServerService"
+            android:exported="false"
+            android:foregroundServiceType="dataSync"/>
+        <!-- Local AI boot start: manifest-registered on purpose — it must
+             run in a fresh app process BEFORE any Flutter engine exists,
+             reading the Flutter SharedPreferences store directly
+             (BootReceiver.kt). exported="false" is safe because
+             BOOT_COMPLETED is a protected broadcast (system-only). -->
+        <receiver
+            android:name=".BootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

@@ -115,7 +115,7 @@ jobs:
       (needs.changes.outputs.code == 'true' ||
       github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v5
 
@@ -143,8 +143,55 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Inject llama.cpp runtime (arm64-v8a + x86_64)
+        uses: ./.github/actions/llama-runtime
+        with:
+          abis: 'arm64-v8a x86_64'
+
       - name: Build debug APK
         run: flutter build apk --debug
+
+      - name: Verify runtime inside debug APK
+        run: |
+          set -euo pipefail
+          APK="build/app/outputs/flutter-apk/app-debug.apk"
+          # v1.51.2 — full stage dump: sources, merged intermediates, the
+          # stripped dir, and the actual APK entry. The APK shipped stub
+          # ELFs (4-7 KB) with keepDebugSymbols + useLegacyPackaging both
+          # active — this dump pinpoints the corrupting stage.
+          echo "== jniLibs sources =="
+          ls -la android/app/src/main/jniLibs/*/libllamaserver.so || true
+          sha256sum android/app/src/main/jniLibs/*/libllamaserver.so || true
+          echo "== gradle intermediates (merge/strip pipeline) =="
+          find build/app/intermediates -name 'libllamaserver.so' \
+            -exec ls -la {} \; -exec sha256sum {} \; || true
+          echo "== APK entries =="
+          for ABI in arm64-v8a x86_64; do
+            # v1.51.2 — the LAUNCHER (libllamaserver.so) is legitimately
+            # tiny (~7 KB) in llama.cpp b12182's all-shared architecture;
+            # the payload is libllama-server-impl.so (> 1 MB).
+            for ENTRY in libllamaserver.so libllama-server-impl.so libggml.so; do
+              LINE=$(unzip -l "$APK" "lib/$ABI/$ENTRY" | tail -n +4 | head -n 1 || true)
+              echo "$ABI $ENTRY entry: $LINE"
+              if [ -z "$(echo "$LINE" | awk '{print $1}')" ]; then
+                echo "::error::lib/$ABI/$ENTRY is missing from $APK."
+                FAILED=1
+              fi
+            done
+            LINE=$(unzip -l "$APK" "lib/$ABI/libllama-server-impl.so" | tail -n +4 | head -n 1 || true)
+            SIZE=$(echo "$LINE" | awk '{print $1}')
+            if [ -z "$SIZE" ] || [ "$SIZE" -lt 1048576 ]; then
+              echo "::error::libllama-server-impl.so for $ABI is missing or < 1 MB inside $APK — the Local AI payload did not survive packaging."
+              FAILED=1
+            else
+              mkdir -p "/tmp/so-dump/$ABI"
+              unzip -o -j "$APK" "lib/$ABI/libllama-server-impl.so" -d "/tmp/so-dump/$ABI" >/dev/null
+              ls -la "/tmp/so-dump/$ABI/libllama-server-impl.so"
+              file -b "/tmp/so-dump/$ABI/libllama-server-impl.so"
+            fi
+          done
+          if [ "${FAILED:-0}" = "1" ]; then exit 1; fi
+
 
   e2e:
     needs: [changes]
@@ -211,6 +258,11 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
           ls -al /dev/kvm
+
+      - name: Inject llama.cpp runtime (arm64-v8a + x86_64)
+        uses: ./.github/actions/llama-runtime
+        with:
+          abis: 'arm64-v8a x86_64'
 
       - name: Run integration tests on emulator
         uses: reactivecircus/android-emulator-runner@v2

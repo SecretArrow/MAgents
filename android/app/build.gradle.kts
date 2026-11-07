@@ -70,6 +70,25 @@ android {
             }
         }
     }
+
+    // libllamaserver.so is a llama.cpp EXECUTABLE (llama-server) renamed
+    // so PackageManager extracts it into nativeLibraryDir and marks it
+    // executable. Two packaging guards are REQUIRED for that trick:
+    //  * keepDebugSymbols — AGP's NDK strip pass cannot handle a PIE
+    //    executable masquerading as a shared library and corrupts it.
+    //  * useLegacyPackaging — with the AGP 8 default (uncompressed,
+    //    16 KB-aligned, non-extracted native libs) zipflinger's ELF
+    //    rewrite mangled the executable into a stub, and the file would
+    //    never be extracted to nativeLibraryDir at all, so
+    //    ProcessBuilder could not spawn it. Legacy packaging = extract
+    //    at install, real executable file on disk.
+    packaging {
+        jniLibs {
+            keepDebugSymbols.add("**/libllamaserver.so")
+            keepDebugSymbols.add("libllamaserver.so")
+            useLegacyPackaging = true
+        }
+    }
 }
 
 kotlin {
