@@ -18,6 +18,7 @@ import 'about_screen.dart';
 import 'context_screen.dart';
 import 'briefing_screen.dart';
 import 'cron_jobs_screen.dart';
+import 'ollama_manage_screen.dart';
 import 'goals_screen.dart';
 import 'reminders_screen.dart';
 import 'memory_screen.dart';
@@ -381,6 +382,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (_) => const CronJobsScreen(),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // -- Local AI / Ollama (port Fase 2, directly below CronJobs) --
+            _sectionTitle(strings.ollamaSectionTitle),
+            _card(
+              child: ListTile(
+                key: const Key('ollama-manage-tile'),
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.memory_rounded),
+                title: Text(strings.ollamaTileTitle),
+                subtitle: Text(
+                  strings.ollamaTileSubtitle,
+                  style: TextStyle(fontSize: 12, color: palette.muted),
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const OllamaManageScreen(),
                   ),
                 ),
               ),

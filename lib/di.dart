@@ -30,6 +30,7 @@ import 'services/goal_service.dart';
 import 'services/memory_repository.dart';
 import 'services/memory_service.dart';
 import 'services/briefing_service.dart';
+import 'services/local_ai/external_ollama_scanner.dart';
 import 'services/reminder_repository.dart';
 import 'services/reminder_service.dart';
 import 'services/scheduled_job_repository.dart';
@@ -813,3 +814,9 @@ final updateCheckProvider =
 
 /// GitHub Releases update checker (injectable client for tests).
 final updateCheckerProvider = Provider<UpdateChecker>((ref) => UpdateChecker());
+
+/// External Ollama server probe (Local AI port Fase 2; ZAgents contract
+/// §2.3). Overridden in tests with a fake.
+final externalOllamaScannerProvider = Provider<ExternalOllamaScanner>(
+  (ref) => ExternalOllamaScanner(),
+);

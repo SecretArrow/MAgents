@@ -724,6 +724,20 @@ abstract class AppStrings {
 
   /// Snack after a confirmed force stop.
   String get forceStopDone;
+
+  // -- Local AI / Ollama (port Fase 2) --------------------------------
+  String get ollamaSectionTitle;
+  String get ollamaTileTitle;
+  String get ollamaTileSubtitle;
+  String get ollamaScreenTitle;
+  String get ollamaTabServer;
+  String get ollamaExternalServerLabel;
+  String get ollamaProbe;
+  String ollamaProbeOk(String version);
+  String ollamaProbeFail(String error);
+  String get ollamaUseAsProvider;
+  String get ollamaOnDeviceTitle;
+  String get ollamaOnDevicePending;
 }
 
 /// English strings (default).
@@ -2310,6 +2324,34 @@ class AppStringsEn implements AppStrings {
   String get forceStopCancel => 'Cancel';
   @override
   String get forceStopDone => 'Force stop executed.';
+
+  @override
+  String get ollamaSectionTitle => 'Local AI';
+  @override
+  String get ollamaTileTitle => 'Ollama Manage';
+  @override
+  String get ollamaTileSubtitle => 'Local AI runtime compatible with Ollama';
+  @override
+  String get ollamaScreenTitle => 'Ollama Manage';
+  @override
+  String get ollamaTabServer => 'Server';
+  @override
+  String get ollamaExternalServerLabel => 'External Ollama server';
+  @override
+  String get ollamaProbe => 'Probe';
+  @override
+  String ollamaProbeOk(String version) => 'Ollama $version is reachable.';
+  @override
+  String ollamaProbeFail(String error) => 'No Ollama server found: $error';
+  @override
+  String get ollamaUseAsProvider => 'Use as provider';
+  @override
+  String get ollamaOnDeviceTitle => 'On-device runtime';
+  @override
+  String get ollamaOnDevicePending =>
+      'The bundled on-device LLM runtime is not available in this build '
+      'yet. You can still point MAgents at an external Ollama server '
+      'below.';
 }
 
 /// Bahasa Indonesia strings.
@@ -3921,4 +3963,33 @@ class AppStringsId implements AppStrings {
   String get forceStopCancel => 'Batal';
   @override
   String get forceStopDone => 'Force stop dijalankan.';
+
+  @override
+  String get ollamaSectionTitle => 'Local AI';
+  @override
+  String get ollamaTileTitle => 'Kelola Ollama';
+  @override
+  String get ollamaTileSubtitle => 'Runtime AI lokal yang kompatibel dengan Ollama';
+  @override
+  String get ollamaScreenTitle => 'Kelola Ollama';
+  @override
+  String get ollamaTabServer => 'Server';
+  @override
+  String get ollamaExternalServerLabel => 'Server Ollama eksternal';
+  @override
+  String get ollamaProbe => 'Periksa';
+  @override
+  String ollamaProbeOk(String version) => 'Ollama $version terjangkau.';
+  @override
+  String ollamaProbeFail(String error) =>
+      'Server Ollama tidak ditemukan: $error';
+  @override
+  String get ollamaUseAsProvider => 'Pakai sebagai provider';
+  @override
+  String get ollamaOnDeviceTitle => 'Runtime di perangkat';
+  @override
+  String get ollamaOnDevicePending =>
+      'Runtime LLM bawaan di perangkat belum tersedia di build ini. '
+      'Kamu tetap bisa mengarahkan MAgents ke server Ollama eksternal '
+      'di bawah.';
 }

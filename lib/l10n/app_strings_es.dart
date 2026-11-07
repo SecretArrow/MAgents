@@ -1651,4 +1651,34 @@ class AppStringsEs implements AppStrings {
   String get forceStopCancel => 'Cancelar';
   @override
   String get forceStopDone => 'Force stop ejecutado.';
+
+  @override
+  String get ollamaSectionTitle => 'IA local';
+  @override
+  String get ollamaTileTitle => 'Gestionar Ollama';
+  @override
+  String get ollamaTileSubtitle =>
+      'Runtime de IA local compatible con Ollama';
+  @override
+  String get ollamaScreenTitle => 'Gestionar Ollama';
+  @override
+  String get ollamaTabServer => 'Servidor';
+  @override
+  String get ollamaExternalServerLabel => 'Servidor Ollama externo';
+  @override
+  String get ollamaProbe => 'Probar';
+  @override
+  String ollamaProbeOk(String version) => 'Ollama $version es accesible.';
+  @override
+  String ollamaProbeFail(String error) =>
+      'No se encontró ningún servidor Ollama: $error';
+  @override
+  String get ollamaUseAsProvider => 'Usar como proveedor';
+  @override
+  String get ollamaOnDeviceTitle => 'Runtime en el dispositivo';
+  @override
+  String get ollamaOnDevicePending =>
+      'El runtime LLM integrado en el dispositivo aún no está '
+      'disponible en esta compilación. Aun así puedes apuntar MAgents '
+      'a un servidor Ollama externo abajo.';
 }
