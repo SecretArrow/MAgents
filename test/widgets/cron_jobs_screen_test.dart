@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:magents/di.dart';
+import 'package:magents/l10n/app_strings.dart';
 import 'package:magents/models/cron_job.dart';
 import 'package:magents/models/models.dart';
 import 'package:magents/services/cron_repository.dart';
@@ -55,7 +57,15 @@ void main() {
             ],
           ),
         ],
-        child: const MaterialApp(home: CronJobsScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: <LocalizationsDelegate<dynamic>>[
+            zLocalizationsDelegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: CronJobsScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

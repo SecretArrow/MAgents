@@ -152,6 +152,11 @@ void main() {
           cronClockProvider.overrideWithValue(() => now),
         ],
       );
+      // Mirror main()'s boot seeding: every stored chat is registered
+      // with the scheduler, otherwise tick() has no sessions to visit.
+      for (final String sid in (seed ?? const <String, CronState>{}).keys) {
+        container.read(cronKnownSessionsProvider).add(sid);
+      }
       dispatcher = FakeDispatcher();
       scheduler = CronSchedulerService(
         controllerFor: (String sid) =>

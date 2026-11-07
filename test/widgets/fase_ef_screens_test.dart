@@ -112,6 +112,9 @@ void main() {
     expect(find.byKey(const Key('telegram-token-field')), findsOneWidget);
     expect(find.byKey(const Key('telegram-test-button')), findsOneWidget);
     expect(find.text('Morning digest'), findsOneWidget);
+    // The merged manager is one long ListView: the second (migrated)
+    // job sits below the fold of the default test surface.
+    await tester.scrollUntilVisible(find.text('Weekly report'), 300);
     expect(find.text('Weekly report'), findsOneWidget);
     expect(find.byKey(const Key('cron-add-fab')), findsOneWidget);
   });
