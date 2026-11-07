@@ -760,7 +760,7 @@ List<Map<String, dynamic>> buildAgentTools({
   ),
   _fn(
     'cron_create',
-    'Create a scheduled job in THIS chat only (a chat can have MANY jobs - each call adds one). kind: once|daily|weekly|interval; action: notify|telegram|both. For once pass runAt (ISO-8601); for daily/weekly pass hour+minute (weekly also weekday 1=Mon..7=Sun); for interval pass intervalMinutes.',
+    'Create a scheduled job in THIS chat only (a chat can have MANY jobs - each call adds one). Prefer a 5-field cron `expression` (minute hour day-of-month month day-of-week, e.g. "30 7 * * 1-5"), or use kind: once|daily|weekly|interval (daily/weekly take hour+minute, weekly also weekday 1=Mon..7=Sun, interval takes intervalMinutes; once takes runAt ISO-8601 and stays one-shot). action: notification|telegram|agent|chat|both - telegram sends message (per-job telegramToken/telegramChatId or the global config), agent runs `prompt` as a headless subagent task inside this chat, chat posts `prompt` into this chat as a user message.',
     <String, dynamic>{
       'title': <String, dynamic>{'type': 'string', 'description': 'Job title'},
       'message': <String, dynamic>{
@@ -769,11 +769,27 @@ List<Map<String, dynamic>> buildAgentTools({
       },
       'kind': <String, dynamic>{
         'type': 'string',
-        'description': 'once|daily|weekly|interval',
+        'description': 'once|daily|weekly|interval (ignored when expression is given)',
       },
       'action': <String, dynamic>{
         'type': 'string',
-        'description': 'notify|telegram|both',
+        'description': 'notification|telegram|agent|chat|both (notify accepted as notification)',
+      },
+      'expression': <String, dynamic>{
+        'type': 'string',
+        'description': '5-field cron expression, e.g. "0 9 * * *" (preferred)',
+      },
+      'prompt': <String, dynamic>{
+        'type': 'string',
+        'description': 'Prompt for action agent/chat (defaults to message)',
+      },
+      'telegramToken': <String, dynamic>{
+        'type': 'string',
+        'description': 'Optional per-job Telegram bot token (falls back to the global config)',
+      },
+      'telegramChatId': <String, dynamic>{
+        'type': 'string',
+        'description': 'Optional per-job Telegram chat id (falls back to the global config)',
       },
       'runAt': <String, dynamic>{
         'type': 'string',

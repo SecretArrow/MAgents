@@ -3,17 +3,31 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../di.dart';
 import '../../l10n/app_strings.dart';
+import '../../models/cron_job.dart';
 import '../../models/models.dart';
+import '../../services/cron_migration.dart';
+import '../../services/cron_scheduler.dart' show CronDispatchResult;
 import '../../services/scheduled_job_runner.dart';
 import '../../services/telegram_sender.dart';
 import '../theme.dart';
 import '../widgets/app_message.dart';
+import 'cron_job_editor_screen.dart';
 
-/// CronJobs of the ACTIVE chat (v1.51.0, Fase F) — full-screen manager
-/// reached from Settings (right below Appearance) and the drawer.
-/// Holds BOTH the job list/editor AND the Telegram channel config, so
-/// everything scheduled lives on one roomy page. Jobs are a LIST: a
-/// chat can own many independent jobs (see service cap of 100).
+/// Full-screen cron manager (the "activity" opened from the Settings
+/// tile directly below Appearance). MAgents merged manager (port
+/// Fase 1): ONE screen for everything scheduled in the ACTIVE chat —
+///
+/// * the global Telegram channel config (fallback credentials for jobs
+///   without their own token/chat id),
+/// * the cron-expression jobs of THIS chat (ported from ZAgents:
+///   telegram / notification / agent / chat actions, master switch,
+///   run history), and
+/// * any remaining LEGACY v1.51.0 jobs of this chat (one-shot and odd
+///   intervals that cannot be expressed as cron — they keep firing via
+///   the legacy engine; migratable kinds are converted automatically
+///   on open and disappear from the legacy section).
+///
+/// Jobs belong to one chat each: data never mixes between chats.
 class CronJobsScreen extends ConsumerStatefulWidget {
   const CronJobsScreen({super.key});
 
@@ -29,10 +43,18 @@ class _CronJobsScreenState extends ConsumerState<CronJobsScreen> {
 
   String get _sessionId => ref.read(activeSessionIdProvider) ?? '';
 
+  static String _fmt(DateTime t) =>
+      '${t.year.toString().padLeft(4, '0')}-'
+      '${t.month.toString().padLeft(2, '0')}-'
+      '${t.day.toString().padLeft(2, '0')} '
+      '${t.hour.toString().padLeft(2, '0')}:'
+      '${t.minute.toString().padLeft(2, '0')}';
+
   @override
   void initState() {
     super.initState();
     _loadConfig();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _migrateLegacy());
   }
 
   @override
@@ -40,6 +62,26 @@ class _CronJobsScreenState extends ConsumerState<CronJobsScreen> {
     _token.dispose();
     _chatId.dispose();
     super.dispose();
+  }
+
+  /// One-shot legacy → cron migration for the active chat (idempotent;
+  /// recorded in the cron store itself).
+  Future<void> _migrateLegacy() async {
+    final String sid = _sessionId;
+    if (sid.isEmpty) return;
+    try {
+      final int migrated = await CronLegacyMigration(
+        cronRepo: ref.read(cronRepositoryProvider),
+        legacyRepo: ref.read(scheduledJobRepositoryProvider),
+      ).migrate(sid);
+      if (!mounted) return;
+      if (migrated > 0) {
+        ref.invalidate(cronJobsProvider(sid));
+        ref.invalidate(scheduledJobListProvider(sid));
+      }
+    } catch (_) {
+      // Migration is best-effort: legacy jobs stay visible below.
+    }
   }
 
   Future<void> _loadConfig() async {
@@ -83,46 +125,57 @@ class _CronJobsScreenState extends ConsumerState<CronJobsScreen> {
     );
   }
 
-  Future<void> _refresh() async {
-    ref.invalidate(scheduledJobListProvider(_sessionId));
-    if (mounted) setState(() {});
-  }
-
-  Future<void> _openEditor([ScheduledJob? existing]) async {
-    final bool? changed = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
-        builder: (_) => CronJobEditorScreen(existing: existing),
-      ),
+  void _openEditor(CronJob job) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => CronJobEditorScreen(job: job)),
     );
-    if (changed == true) await _refresh();
   }
 
-  Future<void> _delete(ScheduledJob job) async {
+  Future<void> _confirmDelete(CronJob job) async {
     final AppStrings strings = stringsOf(context);
     final bool? confirmed = await showDialog<bool>(
       context: context,
       builder: (BuildContext dialogContext) => AlertDialog(
-        backgroundColor: context.zSurface,
-        title: const Text('Delete job?'),
-        content: Text('Job "${job.title}" will be removed.'),
+        key: const Key('cron-delete-dialog'),
+        title: Text(strings.cronDeleteTitle),
+        content: Text(strings.cronDeleteBody(job.name)),
         actions: <Widget>[
           TextButton(
+            key: const Key('cron-delete-cancel'),
             onPressed: () => Navigator.of(dialogContext).pop(false),
             child: Text(strings.cancel),
           ),
-          TextButton(
+          FilledButton(
+            key: const Key('cron-delete-confirm'),
             onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(strings.delete),
           ),
         ],
       ),
     );
-    if (confirmed != true) return;
-    await ref.read(scheduledJobServiceProvider).remove(_sessionId, job.id);
-    await _refresh();
+    if (confirmed == true) {
+      await ref
+          .read(cronJobsProvider(_sessionId).notifier)
+          .removeJob(job.id);
+    }
   }
 
-  String _scheduleSummary(ScheduledJob j) {
+  Future<void> _runNow(CronJob job) async {
+    final AppStrings strings = stringsOf(context);
+    final CronDispatchResult result = await ref
+        .read(cronSchedulerProvider)
+        .runNow(job);
+    if (!mounted) return;
+    showAppMessage(context, '${strings.cronRunNowTooltip}: ${result.detail}');
+  }
+
+  Future<void> _deleteLegacy(ScheduledJob job) async {
+    await ref.read(scheduledJobServiceProvider).remove(_sessionId, job.id);
+    ref.invalidate(scheduledJobListProvider(_sessionId));
+    if (mounted) setState(() {});
+  }
+
+  String _legacySummary(ScheduledJob j) {
     final String time =
         '${j.hour.toString().padLeft(2, '0')}:${j.minute.toString().padLeft(2, '0')}';
     return switch (j.kind) {
@@ -168,355 +221,423 @@ class _CronJobsScreenState extends ConsumerState<CronJobsScreen> {
         ),
       );
     }
-    final List<ScheduledJob> jobs =
+    final AppStrings strings = stringsOf(context);
+    final ZPalette palette = context.palette;
+    final CronState state = ref.watch(cronJobsProvider(sessionId));
+    final List<ScheduledJob> legacyJobs =
         ref.watch(scheduledJobListProvider(sessionId)).value ??
         const <ScheduledJob>[];
+    final Map<String, String> chatTitles = <String, String>{
+      for (final ChatSummary session
+          in (ref.watch(chatListProvider).valueOrNull ?? const <ChatSummary>[]))
+        session.id: session.title,
+    };
     return Scaffold(
-      appBar: AppBar(title: const Text('CronJobs')),
+      appBar: AppBar(title: Text(strings.cronJobsTitle)),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('cron-add-fab'),
-        heroTag: 'cron-add',
-        onPressed: _openEditor,
+        heroTag: 'cron-add-job-fab',
+        tooltip: strings.cronAddJobTooltip,
         icon: const Icon(Icons.add_rounded),
-        label: const Text('New job'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(12, 12, 12, 96),
-        children: <Widget>[
-          // -- Telegram channel -------------------------------------------
-          Container(
-            key: const Key('telegram-card'),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: context.zSurface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: context.zBorder),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                const Row(
-                  children: <Widget>[
-                    Icon(Icons.send_rounded, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'Telegram (for telegram / both jobs)',
-                      style: TextStyle(fontWeight: FontWeight.w700),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  key: const Key('telegram-token-field'),
-                  controller: _token,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Bot token (stored encrypted)',
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  key: const Key('telegram-chat-id-field'),
-                  controller: _chatId,
-                  decoration: const InputDecoration(labelText: 'Chat ID'),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: <Widget>[
-                    FilledButton(
-                      key: const Key('telegram-save-button'),
-                      onPressed: _configLoaded ? _saveConfig : null,
-                      child: const Text('Save'),
-                    ),
-                    const SizedBox(width: 8),
-                    OutlinedButton(
-                      key: const Key('telegram-test-button'),
-                      onPressed: _sendTest,
-                      child: const Text('Send test'),
-                    ),
-                  ],
-                ),
-                if (_testStatus.isNotEmpty) ...<Widget>[
-                  const SizedBox(height: 8),
-                  Text(_testStatus, style: const TextStyle(fontSize: 12)),
-                ],
-              ],
-            ),
+        label: Text(strings.cronAddJobTooltip),
+        onPressed: () => _openEditor(
+          CronJob(
+            id: newId(),
+            sessionId: sessionId,
+            name: '',
+            expression: '',
+            createdAtMs: DateTime.now().millisecondsSinceEpoch,
           ),
-          const SizedBox(height: 16),
-          if (jobs.isEmpty)
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                'No jobs yet for THIS chat. Add as many as you like — '
-                'each job fires independently.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: context.zMuted),
-              ),
-            ),
-          for (final ScheduledJob job in jobs)
+        ),
+      ),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+          children: <Widget>[
+            // -- Telegram channel (global fallback) ----------------------
             Container(
-              margin: const EdgeInsets.only(bottom: 8),
+              key: const Key('telegram-card'),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: context.zSurface,
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: context.zBorder),
               ),
-              child: Material(
-                type: MaterialType.transparency,
-                child: ListTile(
-                  key: Key('cron-job-${job.id}'),
-                  title: Text(
-                    job.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: Text(
-                    <String>[
-                      _scheduleSummary(job),
-                      job.action.name,
-                      if (job.nextRunAt != null)
-                        'next ${job.nextRunAt!.toIso8601String().substring(0, 16).replaceAll('T', ' ')}',
-                      if (job.lastStatus.isNotEmpty) 'last: ${job.lastStatus}',
-                    ].join(' · '),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Row(
                     children: <Widget>[
-                      Switch(
-                        key: Key('cron-switch-${job.id}'),
-                        value: job.enabled,
-                        onChanged: (bool v) async {
-                          await ref
-                              .read(scheduledJobServiceProvider)
-                              .update(sessionId, job.id, enabled: v);
-                          await _refresh();
-                        },
-                      ),
-                      PopupMenuButton<String>(
-                        tooltip: 'Menu',
-                        onSelected: (String action) {
-                          if (action == 'edit') _openEditor(job);
-                          if (action == 'delete') _delete(job);
-                        },
-                        itemBuilder: (BuildContext menuContext) =>
-                            <PopupMenuEntry<String>>[
-                              const PopupMenuItem<String>(
-                                value: 'edit',
-                                child: Text('Edit'),
-                              ),
-                              const PopupMenuItem<String>(
-                                value: 'delete',
-                                child: Text(
-                                  'Delete',
-                                  style: TextStyle(color: Colors.redAccent),
-                                ),
-                              ),
-                            ],
+                      Icon(Icons.send_rounded, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Telegram (fallback for jobs without their own)',
+                        style: TextStyle(fontWeight: FontWeight.w700),
                       ),
                     ],
                   ),
-                  onTap: () => _openEditor(job),
-                ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    key: const Key('telegram-token-field'),
+                    controller: _token,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Bot token (stored encrypted)',
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    key: const Key('telegram-chat-id-field'),
+                    controller: _chatId,
+                    decoration: const InputDecoration(labelText: 'Chat ID'),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: <Widget>[
+                      FilledButton(
+                        key: const Key('telegram-save-button'),
+                        onPressed: _configLoaded ? _saveConfig : null,
+                        child: const Text('Save'),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton(
+                        key: const Key('telegram-test-button'),
+                        onPressed: _sendTest,
+                        child: const Text('Send test'),
+                      ),
+                    ],
+                  ),
+                  if (_testStatus.isNotEmpty) ...<Widget>[
+                    const SizedBox(height: 8),
+                    Text(_testStatus, style: const TextStyle(fontSize: 12)),
+                  ],
+                ],
               ),
             ),
-        ],
+            const SizedBox(height: 16),
+
+            // -- Master switch -------------------------------------------
+            Card(
+              child: SwitchListTile(
+                key: const Key('cron-master-switch'),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                title: Text(strings.cronMasterTitle),
+                subtitle: Text(
+                  strings.cronMasterSubtitle,
+                  style: TextStyle(fontSize: 12, color: palette.muted),
+                ),
+                value: state.enabled,
+                onChanged: (bool value) => ref
+                    .read(cronJobsProvider(sessionId).notifier)
+                    .setEnabled(value),
+              ),
+            ),
+            Text(
+              strings.cronRunsWhileAppOpen,
+              style: TextStyle(
+                fontSize: 11.5,
+                color: palette.muted,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // -- Cron jobs -------------------------------------------------
+            if (state.jobs.isEmpty)
+              Card(
+                key: const Key('cron-empty-card'),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: <Widget>[
+                      Icon(
+                        Icons.schedule_rounded,
+                        size: 32,
+                        color: palette.muted,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        strings.cronJobsEmptyTitle,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        strings.cronJobsEmptyBody,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          color: palette.muted,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else ...<Widget>[
+              for (final CronJob job in state.jobs)
+                _JobCard(
+                  key: Key('cron-job-card-${job.id}'),
+                  job: job,
+                  fmt: _fmt,
+                  chatTargetLabel: job.action == CronActionKind.chat
+                      ? (chatTitles[job.chatSessionId.isEmpty
+                                ? job.sessionId
+                                : job.chatSessionId] ??
+                            strings.cronChatTargetMissing)
+                      : null,
+                  onEdit: () => _openEditor(job),
+                  onDelete: () => _confirmDelete(job),
+                  onToggle: (bool value) => ref
+                      .read(cronJobsProvider(sessionId).notifier)
+                      .toggleJob(job.id, value),
+                  onRunNow: () => _runNow(job),
+                ),
+            ],
+
+            // -- Legacy jobs (not cron-expressible) ------------------------
+            if (legacyJobs.isNotEmpty) ...<Widget>[
+              const SizedBox(height: 16),
+              const Text(
+                'Legacy jobs',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'One-shot and non-divisor interval jobs from the previous '
+                'scheduler. They cannot be expressed as cron, so they stay '
+                'here and keep firing via the legacy engine until their '
+                'single run.',
+                style: TextStyle(
+                  fontSize: 11.5,
+                  color: palette.muted,
+                  height: 1.35,
+                ),
+              ),
+              const SizedBox(height: 8),
+              for (final ScheduledJob job in legacyJobs)
+                Card(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  child: ListTile(
+                    key: Key('legacy-job-${job.id}'),
+                    title: Text(
+                      job.title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    subtitle: Text(
+                      <String>[
+                        _legacySummary(job),
+                        job.action.name,
+                        if (job.lastStatus.isNotEmpty)
+                          'last: ${job.lastStatus}',
+                      ].join(' · '),
+                    ),
+                    trailing: IconButton(
+                      key: Key('legacy-job-delete-${job.id}'),
+                      tooltip: strings.delete,
+                      icon: const Icon(Icons.delete_outline_rounded),
+                      onPressed: () => _deleteLegacy(job),
+                    ),
+                  ),
+                ),
+            ],
+            const SizedBox(height: 16),
+
+            // -- History ---------------------------------------------------
+            Text(
+              strings.cronHistoryTitle,
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            if (state.history.isEmpty)
+              Text(
+                strings.cronHistoryEmpty,
+                style: TextStyle(fontSize: 12, color: palette.muted),
+              )
+            else ...<Widget>[
+              for (final CronRunEntry entry in state.history)
+                Padding(
+                  key: Key('cron-history-row-${entry.jobId}-${entry.atMs}'),
+                  padding: const EdgeInsets.symmetric(vertical: 3),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Icon(
+                        entry.ok
+                            ? Icons.check_circle_outline_rounded
+                            : Icons.error_outline_rounded,
+                        size: 16,
+                        color: entry.ok
+                            ? const Color(0xFF2E9E5B)
+                            : const Color(0xFFD0453E),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '${_fmt(DateTime.fromMillisecondsSinceEpoch(entry.atMs))} · '
+                          '${entry.jobName} · ${entry.detail}',
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            color: palette.muted,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ],
+        ),
       ),
     );
   }
 }
 
-/// Full-page job editor (v1.51.0): roomy form, not a dialog.
-class CronJobEditorScreen extends ConsumerStatefulWidget {
-  const CronJobEditorScreen({super.key, this.existing});
+/// One job card: name + action icon, schedule, next/last run lines, the
+/// enabled switch and the Run-now / delete actions.
+class _JobCard extends StatelessWidget {
+  const _JobCard({
+    super.key,
+    required this.job,
+    required this.fmt,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onToggle,
+    required this.onRunNow,
+    this.chatTargetLabel,
+  });
 
-  final ScheduledJob? existing;
+  final CronJob job;
+  final String Function(DateTime) fmt;
 
-  @override
-  ConsumerState<CronJobEditorScreen> createState() =>
-      _CronJobEditorScreenState();
-}
-
-class _CronJobEditorScreenState extends ConsumerState<CronJobEditorScreen> {
-  late final TextEditingController _title;
-  late final TextEditingController _message;
-  late final TextEditingController _runAt;
-  late final TextEditingController _interval;
-  late JobScheduleKind _kind;
-  late JobAction _action;
-  late TimeOfDay _time;
-  late int _weekday;
-
-  @override
-  void initState() {
-    super.initState();
-    final ScheduledJob? e = widget.existing;
-    _title = TextEditingController(text: e?.title ?? '');
-    _message = TextEditingController(text: e?.message ?? '');
-    _runAt = TextEditingController(
-      text: (e?.runAt ?? DateTime.now().add(const Duration(hours: 1)))
-          .toIso8601String()
-          .substring(0, 16)
-          .replaceAll('T', ' '),
-    );
-    _interval = TextEditingController(text: '${e?.intervalMinutes ?? 60}');
-    _kind = e?.kind ?? JobScheduleKind.once;
-    _action = e?.action ?? JobAction.notify;
-    _time = TimeOfDay(hour: e?.hour ?? 9, minute: e?.minute ?? 0);
-    _weekday = e?.weekday ?? 1;
-  }
-
-  @override
-  void dispose() {
-    _title.dispose();
-    _message.dispose();
-    _runAt.dispose();
-    _interval.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    if (_title.text.trim().isEmpty) return;
-    final String sessionId = ref.read(activeSessionIdProvider) ?? '';
-    final service = ref.read(scheduledJobServiceProvider);
-    final DateTime? runAt = DateTime.tryParse(_runAt.text.trim());
-    if (widget.existing == null) {
-      await service.create(
-        sessionId,
-        title: _title.text,
-        message: _message.text,
-        kind: _kind,
-        hour: _time.hour,
-        minute: _time.minute,
-        weekday: _weekday,
-        intervalMinutes: int.tryParse(_interval.text.trim()) ?? 60,
-        runAt: runAt,
-        action: _action,
-      );
-    } else {
-      await service.update(
-        sessionId,
-        widget.existing!.id,
-        title: _title.text,
-        message: _message.text,
-        kind: _kind,
-        hour: _time.hour,
-        minute: _time.minute,
-        weekday: _weekday,
-        intervalMinutes: int.tryParse(_interval.text.trim()) ?? 60,
-        runAt: runAt,
-        action: _action,
-      );
-    }
-    if (mounted) Navigator.of(context).pop(true);
-  }
+  /// Chat action only: human label of the target conversation (the
+  /// owning chat by default in MAgents). Null for other action kinds.
+  final String? chatTargetLabel;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final ValueChanged<bool> onToggle;
+  final VoidCallback onRunNow;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.existing == null ? 'New job' : 'Edit job'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: <Widget>[
-          TextField(
-            key: const Key('cron-title-field'),
-            controller: _title,
-            autofocus: true,
-            decoration: const InputDecoration(labelText: 'Title'),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            key: const Key('cron-message-field'),
-            controller: _message,
-            maxLines: 4,
-            decoration: const InputDecoration(
-              labelText: 'Message (sent / shown when the job fires)',
-            ),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<JobScheduleKind>(
-            key: const Key('cron-kind-field'),
-            initialValue: _kind,
-            decoration: const InputDecoration(labelText: 'Schedule'),
-            items: <DropdownMenuItem<JobScheduleKind>>[
-              for (final JobScheduleKind k in JobScheduleKind.values)
-                DropdownMenuItem<JobScheduleKind>(
-                  value: k,
-                  child: Text(k.name),
+    final AppStrings strings = stringsOf(context);
+    final ZPalette palette = context.palette;
+    final IconData actionIcon = switch (job.action) {
+      CronActionKind.notification => Icons.notifications_none_rounded,
+      CronActionKind.telegram => Icons.send_outlined,
+      CronActionKind.agent => Icons.smart_toy_outlined,
+      CronActionKind.chat => Icons.forum_rounded,
+    };
+    final String? nextLine = job.nextRunAtMs == null
+        ? null
+        : '${strings.cronNextRunLabel}: ${fmt(DateTime.fromMillisecondsSinceEpoch(job.nextRunAtMs!))}';
+    final String? lastLine = job.lastRunAtMs == null
+        ? null
+        : '${strings.cronLastRunLabel}: ${fmt(DateTime.fromMillisecondsSinceEpoch(job.lastRunAtMs!))}${job.lastResult.isEmpty ? '' : ' · ${job.lastResult}'}';
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onEdit,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Icon(actionIcon, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      job.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (!job.enabled)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 4),
+                      child: Text(
+                        strings.cronDisabledBadge,
+                        style: TextStyle(fontSize: 10.5, color: palette.muted),
+                      ),
+                    ),
+                  Switch(
+                    key: Key('cron-job-switch-${job.id}'),
+                    value: job.enabled,
+                    onChanged: onToggle,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                job.expression,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: palette.muted,
+                  fontFeatures: const <FontFeature>[
+                    FontFeature.tabularFigures(),
+                  ],
                 ),
+              ),
+              if (chatTargetLabel != null)
+                Text(
+                  '→ $chatTargetLabel',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: palette.muted,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              if (nextLine != null)
+                Text(
+                  nextLine,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: palette.muted,
+                    fontFeatures: const <FontFeature>[
+                      FontFeature.tabularFigures(),
+                    ],
+                  ),
+                ),
+              if (lastLine != null)
+                Text(
+                  lastLine,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    color: job.lastResultOk
+                        ? palette.muted
+                        : const Color(0xFFD0453E),
+                  ),
+                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  IconButton(
+                    key: Key('cron-job-run-now-${job.id}'),
+                    tooltip: strings.cronRunNowTooltip,
+                    icon: const Icon(Icons.play_arrow_rounded),
+                    onPressed: onRunNow,
+                  ),
+                  IconButton(
+                    key: Key('cron-job-delete-${job.id}'),
+                    tooltip: strings.delete,
+                    icon: const Icon(Icons.delete_outline_rounded),
+                    onPressed: onDelete,
+                  ),
+                ],
+              ),
             ],
-            onChanged: (JobScheduleKind? v) =>
-                setState(() => _kind = v ?? _kind),
           ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<JobAction>(
-            key: const Key('cron-action-field'),
-            initialValue: _action,
-            decoration: const InputDecoration(labelText: 'Action'),
-            items: <DropdownMenuItem<JobAction>>[
-              for (final JobAction a in JobAction.values)
-                DropdownMenuItem<JobAction>(value: a, child: Text(a.name)),
-            ],
-            onChanged: (JobAction? v) => setState(() => _action = v ?? _action),
-          ),
-          const SizedBox(height: 12),
-          if (_kind == JobScheduleKind.once)
-            TextField(
-              key: const Key('cron-runat-field'),
-              controller: _runAt,
-              decoration: const InputDecoration(
-                labelText: 'Fire at (YYYY-MM-DD HH:MM)',
-              ),
-            ),
-          if (_kind == JobScheduleKind.daily || _kind == JobScheduleKind.weekly)
-            ListTile(
-              key: const Key('cron-time-tile'),
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Time of day'),
-              subtitle: Text(
-                '${_time.hour.toString().padLeft(2, '0')}:${_time.minute.toString().padLeft(2, '0')}',
-              ),
-              trailing: const Icon(Icons.access_time_rounded),
-              onTap: () async {
-                final TimeOfDay? picked = await showTimePicker(
-                  context: context,
-                  initialTime: _time,
-                );
-                if (picked != null) setState(() => _time = picked);
-              },
-            ),
-          if (_kind == JobScheduleKind.weekly)
-            DropdownButtonFormField<int>(
-              key: const Key('cron-weekday-field'),
-              initialValue: _weekday,
-              decoration: const InputDecoration(
-                labelText: 'Weekday (1 = Mon … 7 = Sun)',
-              ),
-              items: <DropdownMenuItem<int>>[
-                for (int d = 1; d <= 7; d++)
-                  DropdownMenuItem<int>(value: d, child: Text('$d')),
-              ],
-              onChanged: (int? v) => setState(() => _weekday = v ?? _weekday),
-            ),
-          if (_kind == JobScheduleKind.interval)
-            TextField(
-              key: const Key('cron-interval-field'),
-              controller: _interval,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Interval (minutes)',
-              ),
-            ),
-          const SizedBox(height: 24),
-          FilledButton(
-            key: const Key('cron-save-button'),
-            onPressed: _save,
-            child: const Text('Save job'),
-          ),
-        ],
+        ),
       ),
     );
   }

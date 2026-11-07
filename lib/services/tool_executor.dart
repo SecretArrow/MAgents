@@ -10,6 +10,9 @@ import 'js_runtime.dart';
 import 'goal_service.dart';
 import 'memory_service.dart';
 import 'reminder_service.dart';
+import '../models/cron_job.dart';
+import 'cron_migration.dart';
+import 'cron_tool_service.dart';
 import 'scheduled_job_service.dart';
 import 'module_registry.dart';
 import 'module_runtime.dart';
@@ -67,6 +70,7 @@ class ToolExecutor {
     this.goals,
     this.reminders,
     this.cronJobs,
+    this.cronStore,
   });
 
   final BrowserAutomation browser;
@@ -143,6 +147,12 @@ class ToolExecutor {
   /// Scheduled jobs behind the `cron_*` tools (v1.51.0). Nullable for
   /// legacy tests; the tools degrade gracefully when absent.
   final ScheduledJobService? cronJobs;
+
+  /// Cron-expression job store (port Fase 1): when present, the
+  /// `cron_*` tools create/list/toggle/delete REAL cron jobs for the
+  /// calling chat. One-shot jobs (no cron equivalent) still fall back
+  /// to the legacy [cronJobs] service.
+  final CronToolService? cronStore;
 
   /// Cached root-availability outcome (null = not probed yet).
   bool? _rootAvailable;
@@ -597,7 +607,8 @@ class ToolExecutor {
     );
   }
 
-  // -- CronJobs (v1.51.0, per-chat, multi-job) ---------------------------
+  // -- CronJobs (per-chat, multi-job; cron expressions since the
+  // ZAgents port) ------------------------------------------------------
 
   JobScheduleKind _jobKind(Object? raw) =>
       switch (raw?.toString().toLowerCase()) {
@@ -613,10 +624,97 @@ class ToolExecutor {
     _ => JobAction.notify,
   };
 
+  CronActionKind _cronAction(Object? raw) =>
+      switch (raw?.toString().toLowerCase()) {
+        'telegram' => CronActionKind.telegram,
+        'agent' => CronActionKind.agent,
+        'chat' => CronActionKind.chat,
+        _ => CronActionKind.notification,
+      };
+
+  /// Builds the cron expression for a create call: an explicit valid
+  /// `expression` wins; otherwise the legacy kind fields are converted
+  /// (daily/weekly/interval). Returns null for one-shot jobs, which
+  /// stay on the legacy service.
+  String? _cronExpressionFor(Map<String, dynamic> args) {
+    final String explicit = args['expression']?.toString().trim() ?? '';
+    if (explicit.isNotEmpty) return explicit;
+    final ScheduledJob probe = ScheduledJob(
+      id: 'probe',
+      sessionId: 'probe',
+      title: 'probe',
+      kind: _jobKind(args['kind']),
+      hour: (args['hour'] as num?)?.toInt() ?? 9,
+      minute: (args['minute'] as num?)?.toInt() ?? 0,
+      weekday: (args['weekday'] as num?)?.toInt() ?? 1,
+      intervalMinutes: (args['intervalMinutes'] as num?)?.toInt() ?? 60,
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+    return CronLegacyMigration.expressionFor(probe);
+  }
+
   Future<ToolResult> _cronCreate(
     Map<String, dynamic> args,
     String? sessionId,
   ) async {
+    final String sid = sessionId ?? '';
+    final CronToolService? store = cronStore;
+    final String? expression = _cronExpressionFor(args);
+    if (store != null && expression != null) {
+      final String title = args['title']?.toString().trim() ?? '';
+      final String message = args['message']?.toString() ?? '';
+      final String prompt =
+          args['prompt']?.toString() ?? args['agentPrompt']?.toString() ?? '';
+      if (title.isEmpty) {
+        return const ToolResult(
+          ok: false,
+          llmOutput: 'cron_create failed: empty title.',
+        );
+      }
+      final String actionRaw = args['action']?.toString().toLowerCase() ?? '';
+      final List<CronActionKind> kinds = actionRaw == 'both'
+          ? const <CronActionKind>[
+              CronActionKind.telegram,
+              CronActionKind.notification,
+            ]
+          : <CronActionKind>[_cronAction(args['action'])];
+      CronJob? last;
+      for (final CronActionKind kind in kinds) {
+        last = await store.add(
+          sid,
+          CronJob(
+            id: newId(),
+            sessionId: sid,
+            name: title,
+            expression: expression,
+            action: kind,
+            telegramToken: args['telegramToken']?.toString() ?? '',
+            telegramChatId: args['telegramChatId']?.toString() ?? '',
+            messageText: message,
+            notifTitle: title,
+            notifText: message,
+            agentPrompt: prompt.isNotEmpty ? prompt : message,
+            createdAtMs: DateTime.now().millisecondsSinceEpoch,
+          ),
+        );
+      }
+      if (last == null) {
+        return const ToolResult(
+          ok: false,
+          llmOutput: 'cron_create failed: no active chat session.',
+        );
+      }
+      return ToolResult(
+        ok: true,
+        llmOutput:
+            'Cron job created for this chat: ${last.id} "$title" '
+            '($expression, ${kinds.map((k) => k.name).join('+')}) next run '
+            '${last.nextRunAtMs == null ? '—' : DateTime.fromMillisecondsSinceEpoch(last.nextRunAtMs!).toIso8601String()}.',
+      );
+    }
+    // Legacy fallback: one-shot jobs (no cron equivalent) and builds
+    // without the cron store keep the v1.51.0 behavior.
     final ScheduledJobService? svc = cronJobs;
     if (svc == null) {
       return const ToolResult(
@@ -625,7 +723,7 @@ class ToolExecutor {
       );
     }
     final ScheduledJob? job = await svc.create(
-      sessionId ?? '',
+      sid,
       title: args['title']?.toString() ?? '',
       message: args['message']?.toString() ?? '',
       kind: _jobKind(args['kind']),
@@ -654,34 +752,54 @@ class ToolExecutor {
   }
 
   ToolResult _cronList(Map<String, dynamic> args, String? sessionId) {
+    final String sid = sessionId ?? '';
+    final List<String> lines = <String>[];
+    final CronToolService? store = cronStore;
+    if (store != null) {
+      for (final CronJob j in store.list(sid)) {
+        lines.add(
+          '- ${j.id} · cron "${j.expression}" · ${j.action.name} · '
+          '${j.enabled ? 'enabled' : 'disabled'} · next '
+          '${j.nextRunAtMs == null ? '—' : DateTime.fromMillisecondsSinceEpoch(j.nextRunAtMs!).toIso8601String()} · ${j.name}',
+        );
+      }
+    }
     final ScheduledJobService? svc = cronJobs;
-    if (svc == null) {
+    if (svc != null) {
+      for (final ScheduledJob j in svc.list(sid)) {
+        lines.add(
+          '- ${j.id} · ${j.kind.name} (legacy) · ${j.action.name} · '
+          '${j.enabled ? 'enabled' : 'disabled'} · next '
+          '${j.nextRunAt?.toIso8601String() ?? '—'} · ${j.title}',
+        );
+      }
+    }
+    if (store == null && svc == null) {
       return const ToolResult(
         ok: false,
         llmOutput: 'cron_list is unavailable in this build.',
       );
     }
-    final List<ScheduledJob> jobs = svc.list(sessionId ?? '');
-    if (jobs.isEmpty) {
+    if (lines.isEmpty) {
       return const ToolResult(ok: true, llmOutput: 'No jobs in this chat.');
     }
-    return ToolResult(
-      ok: true,
-      llmOutput: jobs
-          .map(
-            (ScheduledJob j) =>
-                '- ${j.id} · ${j.kind.name} · ${j.action.name} · '
-                '${j.enabled ? 'enabled' : 'disabled'} · next '
-                '${j.nextRunAt?.toIso8601String() ?? '—'} · ${j.title}',
-          )
-          .join('\n'),
-    );
+    return ToolResult(ok: true, llmOutput: lines.join('\n'));
   }
 
   Future<ToolResult> _cronUpdate(
     Map<String, dynamic> args,
     String? sessionId,
   ) async {
+    final String sid = sessionId ?? '';
+    final String id = args['id']?.toString() ?? '';
+    final bool enabled = args['enabled'] == true;
+    final CronToolService? store = cronStore;
+    if (store != null && await store.setEnabled(sid, id, enabled)) {
+      return ToolResult(
+        ok: true,
+        llmOutput: 'Job $id is now ${enabled ? 'enabled' : 'disabled'}.',
+      );
+    }
     final ScheduledJobService? svc = cronJobs;
     if (svc == null) {
       return const ToolResult(
@@ -689,11 +807,7 @@ class ToolExecutor {
         llmOutput: 'cron_update is unavailable in this build.',
       );
     }
-    final ScheduledJob? job = await svc.update(
-      sessionId ?? '',
-      args['id']?.toString() ?? '',
-      enabled: args['enabled'] == true,
-    );
+    final ScheduledJob? job = await svc.update(sid, id, enabled: enabled);
     if (job == null) {
       return const ToolResult(
         ok: false,
@@ -711,6 +825,12 @@ class ToolExecutor {
     Map<String, dynamic> args,
     String? sessionId,
   ) async {
+    final String sid = sessionId ?? '';
+    final String id = args['id']?.toString() ?? '';
+    final CronToolService? store = cronStore;
+    if (store != null && await store.remove(sid, id)) {
+      return const ToolResult(ok: true, llmOutput: 'Job deleted.');
+    }
     final ScheduledJobService? svc = cronJobs;
     if (svc == null) {
       return const ToolResult(
@@ -718,10 +838,7 @@ class ToolExecutor {
         llmOutput: 'cron_delete is unavailable in this build.',
       );
     }
-    final bool removed = await svc.remove(
-      sessionId ?? '',
-      args['id']?.toString() ?? '',
-    );
+    final bool removed = await svc.remove(sid, id);
     return ToolResult(
       ok: removed,
       llmOutput: removed

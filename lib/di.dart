@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'models/cron_job.dart';
 import 'models/models.dart';
 import 'services/agent_composer.dart';
 import 'services/agent_controller.dart';
@@ -19,6 +20,9 @@ import 'services/attachment_service.dart';
 import 'services/backup_service.dart';
 import 'services/browser_automation.dart';
 import 'services/browser_session_isolation.dart';
+import 'services/cron_repository.dart';
+import 'services/cron_scheduler.dart';
+import 'services/cron_tool_service.dart';
 import 'services/chat_store.dart';
 import 'services/context_repository.dart';
 import 'services/goal_repository.dart';
@@ -143,6 +147,74 @@ final scheduledJobRunnerProvider = Provider<ScheduledJobRunner>(
     ],
   ),
 );
+
+/// Cron store (ZAgents port, Fase 1); must be overridden in main()
+/// with the real SharedPreferences-backed repository. Storage is
+/// scoped per chat session (per-chat isolation rule).
+final cronRepositoryProvider = Provider<CronRepository>((ref) {
+  throw UnimplementedError(
+    'cronRepositoryProvider must be overridden in main()',
+  );
+});
+
+/// Live cron state of ONE chat (family keyed by session id).
+final cronJobsProvider =
+    NotifierProvider.family<CronJobsController, CronState, String>(
+      CronJobsController.new,
+    );
+
+/// Repository-level cron access for the `cron_*` agent tools.
+final cronToolServiceProvider = Provider<CronToolService>(
+  (ref) => CronToolService(ref.watch(cronRepositoryProvider)),
+);
+
+/// Production cron dispatcher: telegram (per-job credentials, global
+/// config fallback), notifications, headless agent runs inside the
+/// owning chat's sandbox, and chat injection via sendToSession.
+final cronDispatcherProvider = Provider<CronActionDispatcher>((ref) {
+  return DefaultCronDispatcher(
+    llm: ref.watch(llmClientProvider),
+    telegram: ref.watch(telegramSenderProvider),
+    background: ref.watch(backgroundRunServiceProvider),
+    executeTool:
+        (
+          String name,
+          Map<String, dynamic> args, {
+          String? sessionId,
+          String? browserContext,
+        }) => ref
+            .read(toolExecutorProvider)
+            .execute(
+              name,
+              args,
+              sessionId: sessionId,
+              browserContext: browserContext,
+            ),
+    resolveConfig: () {
+      final AppSettings settings = ref.read(settingsProvider);
+      return LlmConfig(
+        baseUrl: settings.baseUrl,
+        apiKey: <redacted>
+        model: settings.model,
+        engine: settings.engine,
+      );
+    },
+    telegramFallback: () => ref.read(telegramConfigStoreProvider).load(),
+    runInChat: (String sessionId, String prompt) => ref
+        .read(chatControllerProvider.notifier)
+        .sendToSession(sessionId, prompt),
+  );
+});
+
+/// Timer-driven cron scheduler; started once from main().
+final cronSchedulerProvider = Provider<CronSchedulerService>((ref) {
+  return CronSchedulerService(
+    controllerFor: (String sid) => ref.read(cronJobsProvider(sid).notifier),
+    stateFor: (String sid) => ref.read(cronJobsProvider(sid)),
+    sessionIds: () => ref.read(cronKnownSessionsProvider),
+    dispatcher: ref.watch(cronDispatcherProvider),
+  );
+});
 
 final briefingServiceProvider = Provider<BriefingService>(
   (ref) => BriefingService(
@@ -579,6 +651,7 @@ final toolExecutorProvider = Provider<ToolExecutor>((ref) {
     goals: ref.watch(goalServiceProvider),
     reminders: ref.watch(reminderServiceProvider),
     cronJobs: ref.watch(scheduledJobServiceProvider),
+    cronStore: ref.watch(cronToolServiceProvider),
     // v1.38.1 — SKILL.md files bundled with the app binary behind
     // `skill_install builtin:<name>` (no network needed).
     bundledSkills: bundledSkills,

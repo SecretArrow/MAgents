@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:magents/di.dart';
+import 'package:magents/services/cron_repository.dart';
 import 'package:magents/models/models.dart';
 import 'package:magents/services/app_lock_service.dart';
 import 'package:magents/services/background_service.dart';
@@ -675,6 +676,7 @@ List<Override> testOverrides({
   scheduledJobRepositoryProvider.overrideWithValue(
     InMemoryScheduledJobRepository(jobsBySession),
   ),
+  cronRepositoryProvider.overrideWithValue(MemoryCronRepository()),
   telegramConfigStoreProvider.overrideWithValue(
     MemoryTelegramConfigStore(telegramConfig ?? const TelegramConfig()),
   ),

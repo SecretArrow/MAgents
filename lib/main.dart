@@ -11,6 +11,9 @@ import 'di.dart';
 import 'l10n/app_strings.dart';
 import 'models/models.dart';
 import 'services/context_repository.dart';
+import 'services/cron_migration.dart';
+import 'services/cron_repository.dart';
+import 'services/cron_scheduler.dart';
 import 'services/goal_repository.dart';
 import 'services/memory_repository.dart';
 import 'services/prompt_repository.dart';
@@ -49,6 +52,7 @@ Future<void> main() async {
       await PrefsReminderRepository.create();
   final PrefsScheduledJobRepository jobRepo =
       await PrefsScheduledJobRepository.create();
+  final PrefsCronRepository cronRepo = await PrefsCronRepository.create();
   final FilePromptRepository promptRepo = FilePromptRepository(
     resolveBaseDir: getApplicationDocumentsDirectory,
   );
@@ -56,8 +60,10 @@ Future<void> main() async {
   // Per-chat "last seen public IP" memo storage of the chat-switch guard
   // (v1.48.0) — same async-at-boot pattern as the app-lock prefs.
   final SharedPreferences ipMemoPrefs = await SharedPreferences.getInstance();
-  runApp(
-    ProviderScope(
+  // A container handle is needed to boot the cron scheduler once the
+  // widget tree is running (main() is the ONLY place the scheduler is
+  // started, so widget tests never inherit a pending periodic timer).
+  final ProviderContainer container = ProviderContainer(
       overrides: <Override>[
         settingsRepositoryProvider.overrideWithValue(settingsRepo),
         contextRepositoryProvider.overrideWithValue(contextRepo),
@@ -66,6 +72,7 @@ Future<void> main() async {
         goalRepositoryProvider.overrideWithValue(goalRepo),
         reminderRepositoryProvider.overrideWithValue(reminderRepo),
         scheduledJobRepositoryProvider.overrideWithValue(jobRepo),
+        cronRepositoryProvider.overrideWithValue(cronRepo),
         telegramConfigStoreProvider.overrideWithValue(
           PrefsTelegramConfigStore(
             secrets: const FlutterSecretBox(),
@@ -75,9 +82,32 @@ Future<void> main() async {
         appLockPrefsProvider.overrideWithValue(appLockPrefs),
         ipMemoPrefsProvider.overrideWithValue(ipMemoPrefs),
       ],
-      child: const MAgentsApp(),
-    ),
   );
+  runApp(
+    UncontrolledProviderScope(container: container, child: const MAgentsApp()),
+  );
+  // Cron scheduler (ZAgents port, Fase 1): seed the known sessions with
+  // every stored chat, migrate legacy jobs per chat, then start the
+  // 15 s tick. Jobs only ever fire inside their owning chat's scope.
+  unawaited(() async {
+    try {
+      final ChatStore seedStore = ChatStore(
+        resolveBaseDir: getApplicationDocumentsDirectory,
+      );
+      final CronLegacyMigration migration = CronLegacyMigration(
+        cronRepo: cronRepo,
+        legacyRepo: jobRepo,
+      );
+      for (final ChatSummary summary in await seedStore.listSummaries()) {
+        container.read(cronKnownSessionsProvider).add(summary.id);
+        await migration.migrate(summary.id);
+      }
+    } catch (_) {
+      // Seeding/migration is best-effort; the screen re-runs migration
+      // for the active chat on open.
+    }
+    await container.read(cronSchedulerProvider).start();
+  }());
   // CronJobs engine (v1.51.0): best-effort — a minute timer while the
   // process lives plus this start-up catch-up pass. Started OUTSIDE
   // the widget tree on purpose (no pending-timer hazards in tests,

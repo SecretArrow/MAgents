@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Agent butuh akses internet untuk memanggil provider AI & browsing -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <!-- Background agent runs: foreground service + wake lock keep the
          process (Dart agent loop + headless WebView) alive off-screen. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
